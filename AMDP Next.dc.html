@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; background: #F6F4EF; font-family: 'Geist', system-ui, sans-serif; color: #16171A; -webkit-font-smoothing: antialiased; }
+    a { color: #5B4BFF; text-decoration: none; }
+    a:hover { color: #3A2BD9; }
+    button { font-family: 'Geist', system-ui, sans-serif; }
+    input::placeholder { color: #8A8C91; }
+  </style>
+</helmet>
+
+<div style="min-height: 100vh; display: flex; flex-direction: column; background: #F6F4EF;">
+
+  <header data-screen-label="Top bar" style="position: sticky; top: 0; z-index: {{ pal.headerZ }}; height: 64px; flex-shrink: 0; display: flex; align-items: center; gap: 24px; padding: 0 28px; background: rgba(246,244,239,0.88); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: {{ topBorder }};">
+    <button onClick="{{ goHome }}" style="border: 0; background: transparent; padding: 0; cursor: pointer; font-family: 'Instrument Serif', serif; font-size: 27px; color: #16171A; letter-spacing: -0.3px;">AMDP</button>
+    <sc-if value="{{ showTopSearch }}" hint-placeholder-val="{{ false }}">
+      <form onSubmit="{{ pal.submit }}" style="flex: 1; max-width: 640px; margin: 0; height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 5px 0 14px; border-radius: 12px; background: #fff; border: 1px solid rgba(22,23,26,0.14); box-sizing: border-box;">
+        <input data-pal-anchor="top" key="{{ topKey }}" name="q" defaultValue="{{ topSearchValue }}" autoComplete="off" onFocus="{{ pal.onFocus }}" onChange="{{ pal.onQ }}" onKeyDown="{{ pal.onKey }}" placeholder="Search products, data, models or ask a question" style="flex: 1; min-width: 0; border: 0; outline: none; font-family: 'Geist', sans-serif; font-size: 15px; background: transparent; color: #16171A;">
+        <sc-if value="{{ hasTopRead }}" hint-placeholder-val="{{ false }}"><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B4BFF; background: #ECE9FF; padding: 3px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0;">{{ topRead }}</span></sc-if>
+        <span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #8A8C91; padding: 3px 6px; border-radius: 6px; background: #F1EEE7; white-space: nowrap; flex-shrink: 0;">Ctrl K</span>
+        <button type="submit" aria-label="Search" style="width: 30px; height: 30px; flex-shrink: 0; border: 0; border-radius: 9px; background: #16171A; color: #F6F4EF; cursor: pointer;">↑</button>
+      </form>
+    </sc-if>
+    <span style="flex: 1;"></span>
+    <a href="#" style="font-size: 14px; color: #5B5D63;">Docs</a>
+    <button onClick="{{ chat.toggle }}" style="border: 0; cursor: pointer; font-size: 14px; padding: 6px 10px; border-radius: 8px; background: {{ chat.topBg }}; color: {{ chat.topInk }};">Chat</button>
+    <span title="Natasha Kim · VP, Data Science · AWM" style="width: 34px; height: 34px; border-radius: 999px; background: #16171A; color: #F6F4EF; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center;">NK</span>
+  </header>
+
+  <div style="flex: 1; display: flex; align-items: flex-start;">
+    <sc-if value="{{ hasNav }}" hint-placeholder-val="{{ false }}">
+      <nav data-screen-label="Side nav" style="position: sticky; top: 64px; height: calc(100vh - 64px); width: {{ nav.w }}; flex-shrink: 0; box-sizing: border-box; padding: 16px 12px; border-right: 1px solid rgba(22,23,26,0.1); display: flex; flex-direction: column; gap: 2px; overflow: auto; transition: width 180ms cubic-bezier(0.2,0.8,0.2,1);">
+        <sc-for list="{{ nav.main }}" as="n" hint-placeholder-count="2">
+          <button onClick="{{ n.go }}" title="{{ n.label }}" style="display: flex; align-items: center; gap: 12px; height: 38px; padding: 0 10px; border: 0; border-radius: 10px; cursor: pointer; background: {{ n.bg }}; color: #16171A; font-size: 14px; font-weight: {{ n.weight }}; text-align: left;">
+            <span style="width: 24px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: 'Geist Mono', monospace; font-size: 11px; border-radius: 7px; border: 1.5px solid #16171A; box-sizing: border-box;">{{ n.glyph }}</span>
+            <sc-if value="{{ nav.open }}" hint-placeholder-val="{{ true }}"><span style="flex: 1; white-space: nowrap;">{{ n.label }}</span></sc-if>
+          </button>
+        </sc-for>
+        <sc-for list="{{ nav.sections }}" as="sec" hint-placeholder-count="2">
+          <div style="height: 1px; background: rgba(22,23,26,0.1); margin: 12px 6px;"></div>
+          <sc-if value="{{ nav.open }}" hint-placeholder-val="{{ true }}"><div style="padding: 0 10px 6px;"><div style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #5B5D63;">{{ sec.title }}</div><div style="font-size: 11px; color: #8A8C91; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ sec.sub }}</div></div></sc-if>
+          <sc-for list="{{ sec.items }}" as="n" hint-placeholder-count="2">
+            <button onClick="{{ n.go }}" title="{{ n.tip }}" style="display: flex; align-items: center; gap: 12px; min-height: 38px; padding: 4px 10px; border: 0; border-radius: 10px; cursor: pointer; background: transparent; color: #16171A; font-size: 14px; text-align: left;" style-hover="background: rgba(22,23,26,0.05);">
+              <span style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 7px; background: {{ n.tile }}; color: {{ n.ink }}; border: {{ n.tileBorder }}; box-sizing: border-box; font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ n.mono }}</span>
+              <sc-if value="{{ nav.open }}" hint-placeholder-val="{{ true }}"><span style="flex: 1; min-width: 0; display: flex; flex-direction: column;"><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ n.name }}</span><span style="font-size: 11px; color: #8A8C91; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ n.sub }}</span></span></sc-if>
+            </button>
+          </sc-for>
+        </sc-for>
+        <span style="flex: 1;"></span>
+        <button onClick="{{ nav.toggle }}" title="{{ nav.toggleLabel }}" style="height: 34px; border: 0; border-radius: 10px; background: transparent; cursor: pointer; color: #5B5D63; font-family: 'Geist Mono', monospace; font-size: 13px; text-align: {{ nav.toggleAlign }}; padding: 0 12px;" style-hover="background: rgba(22,23,26,0.05);">{{ nav.toggleGlyph }}</button>
+      </nav>
+    </sc-if>
+
+    <div style="flex: 1; min-width: 0; padding-right: {{ chat.pad }}; transition: padding 180ms cubic-bezier(0.2,0.8,0.2,1);">
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+        <div data-screen-label="Home" style="max-width: 1400px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 64px 80px; padding: 64px 56px 96px; box-sizing: border-box;">
+          <div style="flex: 999 1 620px; display: flex; flex-direction: column; gap: 72px; min-width: 0;">
+            <div style="display: flex; flex-direction: column; gap: 22px;">
+              <div style="font-family: 'Geist Mono', monospace; font-size: 12px; letter-spacing: 1px; color: #5B5D63; text-transform: uppercase;">{{ home.greet }}</div>
+              <h1 style="margin: 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: clamp(44px, 5vw, 68px); line-height: 1; letter-spacing: -1.4px; max-width: 820px; text-wrap: pretty;">{{ home.headline }}</h1>
+              <form onSubmit="{{ pal.submit }}" style="position: relative; z-index: {{ pal.anchorZ }}; margin: 6px 0 0; max-width: 820px; height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 10px 0 22px; border-radius: 18px; background: #fff; border: 1px solid rgba(22,23,26,0.14); box-shadow: 0 18px 36px -24px rgba(22,23,26,0.35); box-sizing: border-box;">
+                <input data-pal-anchor="home" name="q" autoComplete="off" onFocus="{{ pal.onFocus }}" onChange="{{ pal.onQ }}" onKeyDown="{{ pal.onKey }}" placeholder="A product, a task, a question, or just a word" style="flex: 1; min-width: 0; border: 0; outline: none; font-family: 'Geist', sans-serif; font-size: 20px; background: transparent; color: #16171A;">
+                <sc-if value="{{ pal.hasRead }}" hint-placeholder-val="{{ false }}"><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B4BFF; background: #ECE9FF; padding: 4px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0;">{{ pal.read }}</span></sc-if>
+                <span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #8A8C91; white-space: nowrap; flex-shrink: 0;">Ctrl + K</span>
+                <button type="submit" aria-label="Search" style="width: 42px; height: 42px; flex-shrink: 0; border: 0; border-radius: 12px; background: #16171A; color: #F6F4EF; font-size: 16px; cursor: pointer;">↑</button>
+              </form>
+            </div>
+
+            <sc-if value="{{ home.d05 }}" hint-placeholder-val="{{ false }}">
+              <section style="display: flex; flex-direction: column;">
+                <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63; padding-bottom: 10px;">PICK UP YOUR SEARCH</div>
+                <sc-for list="{{ home.searches }}" as="q" hint-placeholder-count="2">
+                  <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 0; border-top: 1px solid rgba(22,23,26,0.12);">
+                    <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0;">
+                      <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;"><button onClick="{{ q.rerun }}" style="border: 0; background: transparent; padding: 0; cursor: pointer; font-family: 'Instrument Serif', serif; font-size: 28px; color: #16171A; text-align: left;">"{{ q.q }}"</button><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #8A8C91;">{{ q.meta }}</span></div>
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <sc-for list="{{ q.tops }}" as="t" hint-placeholder-count="2">
+                          <button onClick="{{ t.open }}" style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px 0 4px; border-radius: 10px; background: #fff; border: 1px solid rgba(22,23,26,0.12); font-size: 13px; font-weight: 500; cursor: pointer; color: #16171A;"><span style="width: 22px; height: 22px; border-radius: 6px; background: {{ t.tile }}; color: {{ t.ink }}; font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ t.mono }}</span>{{ t.name }}</button>
+                        </sc-for>
+                      </div>
+                    </div>
+                    <button onClick="{{ q.rerun }}" style="border: 0; background: transparent; cursor: pointer; font-size: 13px; color: #5B4BFF; font-weight: 500;">See results →</button>
+                  </div>
+                </sc-for>
+              </section>
+            </sc-if>
+
+            <sc-if value="{{ home.d1 }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ home.hasMotion }}" hint-placeholder-val="{{ true }}">
+                <section style="display: flex; flex-direction: column;">
+                  <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63; padding-bottom: 10px;">WHERE YOU LEFT OFF</div>
+                  <sc-for list="{{ home.motion }}" as="m" hint-placeholder-count="2">
+                    <div style="display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 0; border-top: 1px solid rgba(22,23,26,0.12);">
+                      <span style="width: 36px; height: 36px; border-radius: 10px; background: {{ m.tile }}; color: {{ m.ink }}; font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ m.mono }}</span>
+                      <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+                        <span style="font-family: 'Geist Mono', monospace; font-size: 14px;">{{ m.path }}</span>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;"><span style="width: 7px; height: 7px; border-radius: 999px; background: {{ m.dot }};"></span><span style="font-size: 13px; color: #16171A;">{{ m.state }}</span><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #8A8C91;">· From {{ m.name }} · {{ m.when }}</span></div>
+                      </div>
+                      <button onClick="{{ m.open }}" style="border: 0; background: transparent; cursor: pointer; font-size: 13px; color: #5B4BFF; font-weight: 500; white-space: nowrap;">{{ m.cta }} ↗</button>
+                    </div>
+                  </sc-for>
+                </section>
+              </sc-if>
+              <sc-if value="{{ home.hasJump }}" hint-placeholder-val="{{ false }}"><section style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63; margin-right: 6px;">ALSO OPENED</span>
+                <sc-for list="{{ home.jump }}" as="j" hint-placeholder-count="3">
+                  <button onClick="{{ j.open }}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px 0 4px; border-radius: 10px; background: #fff; border: 1px solid rgba(22,23,26,0.12); font-family: 'Geist Mono', monospace; font-size: 12px; cursor: pointer; color: #16171A;"><span style="width: 24px; height: 24px; border-radius: 7px; background: {{ j.tile }}; color: {{ j.ink }}; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ j.mono }}</span>{{ j.path }}<span style="color: #8A8C91;">{{ j.when }}</span></button>
+                </sc-for>
+              </section></sc-if>
+            </sc-if>
+
+            <sc-if value="{{ home.d0 }}" hint-placeholder-val="{{ true }}">
+              <section data-screen-label="What people do" style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63;">WHAT PEOPLE DO ON AMDP</div>
+                <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; margin-top: 18px;">
+                  <sc-for list="{{ areas }}" as="dm" hint-placeholder-count="4">
+                    <div style="padding-top: 18px; border-top: 1.5px solid #16171A; display: flex; flex-direction: column; gap: 6px;">
+                      <button onClick="{{ dm.open }}" style="border: 0; background: transparent; padding: 0; cursor: pointer; text-align: left; font-family: 'Instrument Serif', serif; font-size: clamp(22px, 2.2vw, 32px); line-height: 1; color: #16171A; min-width: 0; overflow-wrap: anywhere;">{{ dm.name }}</button>
+                      <div style="font-size: 13px; color: #5B5D63; margin-bottom: 14px; min-height: 34px;">{{ dm.d }}</div>
+                      <sc-for list="{{ dm.jobs }}" as="jb" hint-placeholder-count="3">
+                        <button onClick="{{ jb.go }}" style="border: 0; background: transparent; padding: 9px 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 3px; color: #16171A;" style-hover="color: #5B4BFF;"><span style="font-size: 15px; font-weight: 500;">{{ jb.t }}</span><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63;">{{ jb.p }}</span></button>
+                      </sc-for>
+                      <button onClick="{{ dm.open }}" style="border: 0; background: transparent; padding: 8px 0 0; cursor: pointer; text-align: left; font-size: 13px; color: #5B4BFF; font-weight: 500;">Everything in {{ dm.name }} →</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </section>
+            </sc-if>
+            <sc-if value="{{ home.notD0 }}" hint-placeholder-val="{{ false }}">
+              <section style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63;">EXPLORE BY AREA</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0; border-top: 1.5px solid #16171A;">
+                  <sc-for list="{{ areas }}" as="dm" hint-placeholder-count="4">
+                    <button onClick="{{ dm.open }}" style="border: 0; background: transparent; cursor: pointer; text-align: left; padding: 14px 20px 0 0; display: flex; flex-direction: column; gap: 4px; color: #16171A;"><span style="font-family: 'Instrument Serif', serif; font-size: 26px; line-height: 1;">{{ dm.name }}</span><span style="font-size: 12px; color: #5B5D63;">{{ dm.d }}</span><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B4BFF;">{{ dm.n }} →</span></button>
+                  </sc-for>
+                </div>
+              </section>
+            </sc-if>
+          </div>
+
+          <aside style="flex: 1 1 280px; max-width: 360px; display: flex; flex-direction: column; gap: 56px; padding-top: 34px; min-width: 0;">
+            <sc-if value="{{ home.d1 }}" hint-placeholder-val="{{ false }}">
+              <section style="display: flex; flex-direction: column;">
+                <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63; padding-bottom: 10px;">AROUND YOU IN AWM</div>
+                <sc-for list="{{ home.around }}" as="a" hint-placeholder-count="3">
+                  <div style="display: flex; align-items: flex-start; gap: 12px; padding: 10px 0;">
+                    <span style="width: 26px; height: 26px; flex-shrink: 0; border-radius: 999px; background: {{ a.bg }}; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ a.i }}</span>
+                    <span style="flex: 1; font-size: 14px; line-height: 1.45;">{{ a.t }}</span>
+                    <span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63; white-space: nowrap;">{{ a.when }}</span>
+                  </div>
+                </sc-for>
+              </section>
+            </sc-if>
+            <section style="display: flex; flex-direction: column;">
+              <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63;">PEOPLE IN YOUR ROLE START WITH</div>
+              <div style="font-size: 12px; color: #8A8C91; padding: 2px 0 10px;">VP, Data Science · AWM</div>
+              <sc-for list="{{ home.starts }}" as="s" hint-placeholder-count="3">
+                <button onClick="{{ s.go }}" style="border: 0; background: transparent; padding: 10px 0; cursor: pointer; display: flex; align-items: baseline; gap: 12px; text-align: left; color: #16171A;" style-hover="color: #5B4BFF;">
+                  <span style="font-family: 'Instrument Serif', serif; font-size: 22px; flex: 1; line-height: 1.15;">{{ s.t }}</span>
+                  <span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63; white-space: nowrap;">{{ s.meta }}</span>
+                </button>
+              </sc-for>
+            </section>
+            <section style="display: flex; flex-direction: column;">
+              <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63; padding-bottom: 10px;">POPULAR IN AWM THIS WEEK</div>
+              <sc-for list="{{ home.popular }}" as="p" hint-placeholder-count="3">
+                <button onClick="{{ p.open }}" style="border: 0; background: transparent; padding: 9px 0; cursor: pointer; display: flex; align-items: center; gap: 12px; text-align: left; color: #16171A;">
+                  <span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 8px; background: {{ p.tile }}; color: {{ p.ink }}; font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ p.mono }}</span>
+                  <span style="flex: 1; min-width: 0;"><span style="display: block; font-size: 14px; font-weight: 600;">{{ p.name }}</span><span style="display: block; font-size: 12px; color: #5B5D63;">{{ p.why }}</span></span>
+                </button>
+              </sc-for>
+            </section>
+          </aside>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isResults }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Search results">
+          <div style="max-width: 1400px; margin: 0 auto; display: flex; gap: 26px; padding: 0 56px 0 46px; align-items: center; box-sizing: border-box;">
+            <button onClick="{{ goHome }}" style="border: 0; background: transparent; cursor: pointer; font-family: 'Geist Mono', monospace; font-size: 12px; color: #5B5D63; padding: 6px 10px; border-radius: 8px; white-space: nowrap;" style-hover="background: rgba(22,23,26,0.05);">← Home</button>
+          </div>
+          <div style="border-bottom: 1px solid rgba(22,23,26,0.1);"><div style="max-width: 1400px; margin: 0 auto; display: flex; gap: 26px; padding: 0 56px; overflow-x: auto; box-sizing: border-box;">
+            <sc-for list="{{ r.tabs }}" as="tb" hint-placeholder-count="5">
+              <button onClick="{{ tb.pick }}" style="border: 0; background: transparent; cursor: pointer; padding: 14px 0 12px; font-size: 14px; color: {{ tb.ink }}; font-weight: {{ tb.weight }}; border-bottom: {{ tb.border }}; display: flex; align-items: baseline; gap: 6px; white-space: nowrap;">{{ tb.label }}<span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #8A8C91;">{{ tb.n }}</span></button>
+            </sc-for>
+          </div></div>
+          <div style="max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) {{ r.railCol }}; gap: 56px; padding: 32px 56px 72px; align-items: start; box-sizing: border-box;">
+            <main style="display: flex; flex-direction: column; gap: 40px; min-width: 0;">
+              <section data-screen-label="AI overview" style="background: #EFEBFF; border: 1px solid rgba(91,75,255,0.22); border-radius: 22px; padding: 26px 28px; display: flex; flex-direction: column; gap: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="width: 8px; height: 8px; border-radius: 999px; background: #5B4BFF; box-shadow: 0 0 0 4px rgba(91,75,255,0.18);"></span>
+                  <span style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B4BFF;">AI OVERVIEW</span>
+                  <span style="margin-left: auto; font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63;">{{ r.sources }}</span>
+                </div>
+                <p style="margin: 0; font-family: 'Instrument Serif', serif; font-size: 28px; line-height: 1.25; letter-spacing: -0.3px; text-wrap: pretty;">{{ r.summary }}</p>
+                <sc-if value="{{ r.hasLinks }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <sc-for list="{{ r.links }}" as="l" hint-placeholder-count="2"><button onClick="{{ l.go }}" style="cursor: pointer; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 10px; background: #fff; border: 1px solid rgba(91,75,255,0.25); color: #3A2BD9;">{{ l.label }} →</button></sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ r.hasRecos }}" hint-placeholder-val="{{ true }}">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+                    <sc-for list="{{ r.recos }}" as="p" hint-placeholder-count="2">
+                      <div onClick="{{ p.open }}" onMouseEnter="{{ p.focus }}" style="cursor: pointer; background: #fff; border: 1px solid rgba(22,23,26,0.1); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px; transition: border-color 150ms;" style-hover="border-color: rgba(22,23,26,0.35);">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                          <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 11px; background: {{ p.tile }}; color: {{ p.ink }}; font-family: 'Geist Mono', monospace; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ p.mono }}</span>
+                          <div style="min-width: 0;"><div style="font-size: 17px; font-weight: 600;">{{ p.name }}</div><div style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #8A8C91;">{{ p.typeLabel }} · {{ p.area }}</div></div>
+                        </div>
+                        <div style="font-size: 14px; font-weight: 600;">{{ p.fit }}</div>
+                        <div style="font-size: 13px; line-height: 1.5; color: #5B5D63; flex: 1;">{{ p.desc }}</div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px solid rgba(22,23,26,0.08);">
+                          <span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63;">{{ p.usage }}</span>
+                          <button onClick="{{ p.launch }}" style="border: 1px solid rgba(22,23,26,0.2); cursor: pointer; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 10px; background: transparent; color: #16171A; white-space: nowrap;">{{ p.cta }} ↗</button>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ r.hasFolds }}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; flex-direction: column; border-top: 1px solid rgba(22,23,26,0.16);">
+                    <sc-if value="{{ r.hasStart }}" hint-placeholder-val="{{ true }}">
+                      <div style="border-bottom: 1px solid rgba(22,23,26,0.16);">
+                        <button onClick="{{ r.toggleStart }}" style="width: 100%; cursor: pointer; border: 0; background: transparent; padding: 14px 0; display: flex; align-items: baseline; gap: 14px; text-align: left; color: #16171A;">
+                          <span style="font-size: 16px; font-weight: 600; white-space: nowrap;">Start from something that exists</span>
+                          <span style="flex: 1; min-width: 0; font-size: 13px; color: #5B5D63; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.startSum }}</span>
+                          <span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #5B4BFF; white-space: nowrap;">{{ r.startLabel }}</span>
+                        </button>
+                        <sc-if value="{{ r.startOpen }}" hint-placeholder-val="{{ false }}">
+                          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; padding: 4px 0 18px;">
+                            <sc-for list="{{ r.start }}" as="s" hint-placeholder-count="4">
+                              <button onClick="{{ s.go }}" style="border: 0; background: transparent; padding: 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 6px; color: #16171A;">
+                                <span style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #5B4BFF;">{{ s.k }}</span>
+                                <span style="font-size: 15px; font-weight: 600; line-height: 1.25;">{{ s.t }}</span>
+                                <span style="font-size: 12px; line-height: 1.45; color: #5B5D63;">{{ s.d }}</span>
+                                <span style="display: flex; align-items: center; gap: 6px; font-family: 'Geist Mono', monospace; font-size: 10px; color: #5B5D63;"><span style="width: 6px; height: 6px; border-radius: 999px; background: {{ s.dot }};"></span>{{ s.meta }}</span>
+                                <span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B4BFF;">{{ s.path }} ↗</span>
+                              </button>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ r.hasStack }}" hint-placeholder-val="{{ true }}">
+                      <div style="border-bottom: 1px solid rgba(22,23,26,0.16);">
+                        <button onClick="{{ r.toggleStack }}" style="width: 100%; cursor: pointer; border: 0; background: transparent; padding: 14px 0; display: flex; align-items: baseline; gap: 14px; text-align: left; color: #16171A;">
+                          <span style="font-size: 16px; font-weight: 600; white-space: nowrap;">{{ r.stackTitle }}</span>
+                          <span style="flex: 1; min-width: 0; font-size: 13px; color: #5B5D63; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.stackSum }}</span>
+                          <span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #5B4BFF; white-space: nowrap;">{{ r.stackLabel }}</span>
+                        </button>
+                        <sc-if value="{{ r.stackOpen }}" hint-placeholder-val="{{ false }}">
+                          <div style="padding: 0 0 16px;">
+                            <sc-for list="{{ r.stack }}" as="a" hint-placeholder-count="3">
+                              <div onMouseEnter="{{ a.focus }}" style="display: flex; align-items: center; gap: 12px; padding: 10px 0 10px 14px; border-left: 1.5px solid rgba(22,23,26,0.2); margin-left: 6px; flex-wrap: wrap;">
+                                <button onClick="{{ a.toggle }}" aria-label="Include in product stack" style="width: 16px; height: 16px; flex-shrink: 0; border-radius: 4px; background: {{ a.box }}; border: 1.5px solid #16171A; box-sizing: border-box; cursor: pointer; padding: 0; color: #F6F4EF; font-size: 10px; line-height: 1;">{{ a.check }}</button>
+                                <span style="width: 24px; height: 24px; border-radius: 7px; background: {{ a.tile }}; color: {{ a.ink }}; font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ a.mono }}</span>
+                                <button onClick="{{ a.open }}" style="border: 0; background: transparent; padding: 0; cursor: pointer; font-size: 13px; font-weight: 600; color: #16171A; white-space: nowrap;">{{ a.name }}</button>
+                                <span style="flex: 1; min-width: 120px; font-size: 12px; color: #5B5D63;">{{ a.note }}</span>
+                                <span style="display: flex; align-items: center; gap: 6px; font-family: 'Geist Mono', monospace; font-size: 10px; color: #5B5D63; white-space: nowrap;"><span style="width: 6px; height: 6px; border-radius: 999px; background: {{ a.dot }};"></span>{{ a.status }}</span>
+                              </div>
+                            </sc-for>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 8px; flex-wrap: wrap;">
+                              <span style="font-size: 12px; color: #5B5D63;">{{ r.stackNote }}</span>
+                              <button onClick="{{ r.launchStack }}" style="border: 0; cursor: pointer; font-size: 13px; font-weight: 600; padding: 9px 14px; border-radius: 10px; background: #16171A; color: #F6F4EF;">{{ r.stackCta }} ↗</button>
+                            </div>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+                <form onSubmit="{{ chat.submitOverview }}" style="margin: 0; background: #fff; border: 1px solid rgba(22,23,26,0.14); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <input name="m" autoComplete="off" placeholder="Ask a follow-up or narrow these results" style="flex: 1; min-width: 0; border: 0; outline: none; font-family: 'Geist', sans-serif; font-size: 14px; background: transparent; color: #16171A;">
+                    <button type="submit" aria-label="Ask" style="width: 30px; height: 30px; border: 0; border-radius: 9px; background: #16171A; color: #F6F4EF; cursor: pointer;">↑</button>
+                  </div>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <sc-for list="{{ chat.chips }}" as="c" hint-placeholder-count="3"><button type="button" onClick="{{ c.ask }}" style="cursor: pointer; font-size: 12px; padding: 6px 10px; border-radius: 8px; background: #F1EEE7; border: 1px solid transparent; color: #16171A; white-space: nowrap;" style-hover="border-color: rgba(91,75,255,0.4);">{{ c.label }}</button></sc-for>
+                  </div>
+                </form>
+              </section>
+
+              <sc-if value="{{ r.hasPaa }}" hint-placeholder-val="{{ true }}">
+                <section data-screen-label="People also ask" style="display: flex; flex-direction: column;">
+                  <h2 style="margin: 0 0 8px; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 30px;">People also ask</h2>
+                  <sc-for list="{{ r.paa }}" as="x" hint-placeholder-count="3">
+                    <div style="border-top: 1px solid rgba(22,23,26,0.12);">
+                      <button onClick="{{ x.toggle }}" style="width: 100%; border: 0; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; font-size: 15px; color: #16171A; text-align: left;"><span>{{ x.q }}</span><span style="font-family: 'Geist Mono', monospace; color: #5B5D63;">{{ x.sign }}</span></button>
+                      <sc-if value="{{ x.open }}" hint-placeholder-val="{{ false }}"><p style="margin: 0 0 14px; font-size: 14px; line-height: 1.6; color: #5B5D63; max-width: 680px;">{{ x.a }}</p></sc-if>
+                    </div>
+                  </sc-for>
+                </section>
+              </sc-if>
+
+              <sc-if value="{{ r.hasList }}" hint-placeholder-val="{{ true }}"><section data-screen-label="Results list" style="display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 8px; flex-wrap: wrap;">
+                  <h2 style="margin: 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 30px;">{{ r.listTitle }}</h2>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <sc-for list="{{ r.accFilters }}" as="f" hint-placeholder-count="2"><button onClick="{{ f.toggle }}" style="cursor: pointer; font-size: 12px; padding: 5px 10px; border-radius: 8px; background: {{ f.bg }}; color: {{ f.ink }}; border: 1px solid rgba(22,23,26,0.16);">{{ f.label }}</button></sc-for>
+                  </div>
+                </div>
+                <sc-for list="{{ r.list }}" as="it" hint-placeholder-count="5">
+                  <div onClick="{{ it.open }}" onMouseEnter="{{ it.focus }}" style="cursor: pointer; display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 14px; padding: 14px 12px; margin: 0 -12px; border-top: 1px solid rgba(22,23,26,0.1); border-radius: 12px; background: {{ it.rowBg }};" style-hover="background: #fff;">
+                    <span style="width: 36px; height: 36px; border-radius: 10px; background: {{ it.tile }}; color: {{ it.ink }}; font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ it.mono }}</span>
+                    <div style="min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                      <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;"><span style="font-size: 15px; font-weight: 600;">{{ it.name }}</span><span style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.6px; color: {{ it.ink }}; text-transform: uppercase;">{{ it.typeLabel }}</span></div>
+                      <div style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #8A8C91;">{{ it.area }} · {{ it.lob }} · {{ it.owner }}</div>
+                      <div style="font-size: 13px; color: #5B5D63; line-height: 1.45;">{{ it.desc }}</div>
+                      <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 3px;"><sc-for list="{{ it.factsL }}" as="f" hint-placeholder-count="2"><span style="font-family: 'Geist Mono', monospace; font-size: 11px; padding: 2px 7px; border-radius: 6px; background: #EFECE4;">{{ f.f }}</span></sc-for></div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                      <span style="display: flex; align-items: center; gap: 6px; font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63; white-space: nowrap;"><span style="width: 6px; height: 6px; border-radius: 999px; background: {{ it.dot }};"></span>{{ it.status }}</span>
+                      <div style="display: flex; align-items: center; gap: 6px;">
+                        <button onClick="{{ it.pin }}" title="{{ it.pinTitle }}" style="opacity: {{ it.pinOp }}; cursor: pointer; height: 28px; padding: 0 8px; border-radius: 8px; border: 1px solid rgba(22,23,26,0.16); background: {{ it.pinBg }}; font-family: 'Geist Mono', monospace; font-size: 11px; color: #16171A;">{{ it.pinLabel }}</button>
+                        <button onClick="{{ it.launch }}" style="border: 0; background: transparent; cursor: pointer; font-size: 13px; color: #5B4BFF; font-weight: 600; white-space: nowrap;">{{ it.cta }} ↗</button>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ r.empty }}" hint-placeholder-val="{{ false }}"><div style="padding: 24px 0; border-top: 1px solid rgba(22,23,26,0.1); font-size: 14px; color: #5B5D63;">Nothing here matches. Clear the filter or check the AI overview above for where to go instead.</div></sc-if>
+              </section></sc-if>
+
+              <sc-if value="{{ r.hasRelated }}" hint-placeholder-val="{{ true }}">
+                <section style="display: flex; flex-direction: column; gap: 10px;">
+                  <h2 style="margin: 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 26px;">Related searches</h2>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <sc-for list="{{ r.related }}" as="q" hint-placeholder-count="4"><button onClick="{{ q.go }}" style="cursor: pointer; font-size: 14px; padding: 9px 14px; border-radius: 12px; background: #fff; border: 1px solid rgba(22,23,26,0.12); color: #16171A;">{{ q.q }}</button></sc-for>
+                  </div>
+                </section>
+              </sc-if>
+            </main>
+
+            <sc-if value="{{ r.railOn }}" hint-placeholder-val="{{ true }}">
+              <aside data-screen-label="What you'll need" style="position: sticky; top: 88px; display: flex; flex-direction: column; gap: 16px; min-width: 0;">
+                <div style="background: #fff; border: 1px solid rgba(22,23,26,0.1); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+                  <span style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63;">WHAT YOU'LL NEED</span>
+                  <span style="font-size: 12px; color: #8A8C91; margin-top: -8px;">Hover over a recommendation to see what you need to start using it.</span>
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; background: {{ r.fp.tile }}; color: {{ r.fp.ink }}; font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ r.fp.mono }}</span>
+                    <div style="min-width: 0;"><div style="font-family: 'Instrument Serif', serif; font-size: 24px; line-height: 1;">{{ r.fp.name }}</div><div style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #8A8C91;">{{ r.fp.typeLabel }} · {{ r.fp.area }}</div></div>
+                  </div>
+                  <sc-for list="{{ r.fp.groups }}" as="g" hint-placeholder-count="2">
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                      <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;"><span style="width: 7px; height: 7px; border-radius: 999px; background: {{ g.dot }};"></span>{{ g.label }}</span>
+                      <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="1"><span style="padding-left: 13px; font-size: 13px; line-height: 1.45;">{{ i.t }}</span></sc-for>
+                    </div>
+                  </sc-for>
+                  <button onClick="{{ chat.askNeed }}" style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 600; padding: 9px 12px; border-radius: 10px; background: #EFEBFF; color: #3A2BD9; border: 1px solid rgba(91,75,255,0.25);"><span style="width: 7px; height: 7px; border-radius: 999px; background: #5B4BFF;"></span>Ask about {{ r.fp.name }}</button>
+                  <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(22,23,26,0.08);">
+                    <sc-for list="{{ r.fp.insights }}" as="i" hint-placeholder-count="2"><div style="display: flex; flex-direction: column; gap: 2px;"><span style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.8px; color: #8A8C91; text-transform: uppercase;">{{ i.w }}</span><span style="font-size: 13px; line-height: 1.45;">{{ i.t }}</span></div></sc-for>
+                  </div>
+                </div>
+                <sc-if value="{{ r.hasStack }}" hint-placeholder-val="{{ true }}">
+                  <div style="background: #fff; border: 1px solid rgba(22,23,26,0.1); border-radius: 18px; padding: 14px 12px; display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63; padding: 0 8px 6px;">YOUR PRODUCT STACK</span>
+                    <sc-for list="{{ r.yourStack }}" as="y" hint-placeholder-count="3">
+                      <button onMouseEnter="{{ y.focus }}" onClick="{{ y.open }}" style="cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 7px 8px; border: 0; border-radius: 8px; background: {{ y.bg }}; text-align: left;">
+                        <span style="width: 22px; height: 22px; flex-shrink: 0; border-radius: 6px; background: {{ y.tile }}; color: {{ y.ink }}; font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ y.mono }}</span>
+                        <span style="flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: #16171A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ y.name }}</span>
+                        <span style="display: flex; align-items: center; gap: 5px; font-family: 'Geist Mono', monospace; font-size: 10px; color: #5B5D63; white-space: nowrap;"><span style="width: 6px; height: 6px; border-radius: 999px; background: {{ y.dot }};"></span>{{ y.status }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </aside>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isArea }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Area" style="max-width: 1400px; margin: 0 auto; padding: 24px 56px 72px; box-sizing: border-box; display: flex; flex-direction: column; gap: 36px;">
+          <button onClick="{{ goHome }}" style="align-self: flex-start; margin-left: -10px; border: 0; background: transparent; cursor: pointer; font-family: 'Geist Mono', monospace; font-size: 12px; color: #5B5D63; padding: 6px 10px; border-radius: 8px;" style-hover="background: rgba(22,23,26,0.05);">← Home</button>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63;">AREA · {{ ar.count }}</div>
+            <h1 style="margin: 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 64px; line-height: 1; letter-spacing: -1.4px;">{{ ar.name }}</h1>
+            <div style="font-size: 16px; color: #5B5D63;">{{ ar.d }}</div>
+          </div>
+          <section style="display: flex; flex-direction: column;">
+            <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63; padding-bottom: 10px;">WHAT PEOPLE DO HERE</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 28px;">
+              <sc-for list="{{ ar.jobs }}" as="jb" hint-placeholder-count="3">
+                <button onClick="{{ jb.go }}" style="border: 0; border-top: 1.5px solid #16171A; background: transparent; padding: 14px 0; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 4px; color: #16171A;" style-hover="color: #5B4BFF;"><span style="font-family: 'Instrument Serif', serif; font-size: 26px; line-height: 1.1;">{{ jb.t }}</span><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63;">{{ jb.p }}</span></button>
+              </sc-for>
+            </div>
+          </section>
+          <section style="display: flex; flex-direction: column;">
+            <div style="display: flex; gap: 24px; border-bottom: 1px solid rgba(22,23,26,0.1); overflow-x: auto;">
+              <sc-for list="{{ ar.tabs }}" as="tb" hint-placeholder-count="4">
+                <button onClick="{{ tb.pick }}" style="border: 0; background: transparent; cursor: pointer; padding: 12px 0; font-size: 14px; color: {{ tb.ink }}; font-weight: {{ tb.weight }}; border-bottom: {{ tb.border }}; display: flex; align-items: baseline; gap: 6px; white-space: nowrap;">{{ tb.label }}<span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #8A8C91;">{{ tb.n }}</span></button>
+              </sc-for>
+            </div>
+            <sc-for list="{{ ar.list }}" as="it" hint-placeholder-count="5">
+              <div onClick="{{ it.open }}" style="cursor: pointer; display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 14px; padding: 14px 12px; margin: 0 -12px; border-bottom: 1px solid rgba(22,23,26,0.1); border-radius: 12px;" style-hover="background: #fff;">
+                <span style="width: 36px; height: 36px; border-radius: 10px; background: {{ it.tile }}; color: {{ it.ink }}; font-family: 'Geist Mono', monospace; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ it.mono }}</span>
+                <div style="min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                  <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;"><span style="font-size: 15px; font-weight: 600;">{{ it.name }}</span><span style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.6px; color: {{ it.ink }}; text-transform: uppercase;">{{ it.typeLabel }}</span></div>
+                  <div style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #8A8C91;">{{ it.lob }} · {{ it.owner }}</div>
+                  <div style="font-size: 13px; color: #5B5D63; line-height: 1.45;">{{ it.desc }}</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                  <span style="display: flex; align-items: center; gap: 6px; font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63; white-space: nowrap;"><span style="width: 6px; height: 6px; border-radius: 999px; background: {{ it.dot }};"></span>{{ it.status }}</span>
+                  <button onClick="{{ it.launch }}" style="border: 0; background: transparent; cursor: pointer; font-size: 13px; color: #5B4BFF; font-weight: 600; white-space: nowrap;">{{ it.cta }} ↗</button>
+                </div>
+              </div>
+            </sc-for>
+          </section>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <sc-if value="{{ chat.open }}" hint-placeholder-val="{{ false }}">
+    <aside data-screen-label="Chat" style="position: fixed; top: 64px; right: 0; bottom: 0; z-index: 25; width: min(480px, 100vw); background: #EFEBFF; border-left: 1px solid rgba(91,75,255,0.22); display: flex; flex-direction: column; box-sizing: border-box;">
+      <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 18px; border-bottom: 1px solid rgba(91,75,255,0.18);">
+        <span style="width: 8px; height: 8px; border-radius: 999px; background: #5B4BFF; box-shadow: 0 0 0 4px rgba(91,75,255,0.18);"></span>
+        <span style="font-weight: 600; font-size: 14px; white-space: nowrap; flex-shrink: 0;">AMDP Assist</span>
+        <span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">{{ chat.context }}</span>
+        <button onClick="{{ chat.toggleHistory }}" style="height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: {{ chat.histBg }}; font-size: 12px; font-weight: 600; cursor: pointer; color: #16171A;">History</button>
+        <button onClick="{{ chat.newChat }}" title="New chat" style="height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; font-size: 12px; font-weight: 600; cursor: pointer; color: #16171A;">New</button>
+                <button onClick="{{ chat.close }}" title="Close chat. Your conversation stays as a pill." style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; font-size: 16px; color: #5B5D63;">×</button>
+      </div>
+      <div style="flex: 1; min-height: 0; overflow: auto; padding: 18px; display: flex; flex-direction: column; gap: 18px; font-size: 14px; line-height: 1.6;">
+        <sc-if value="{{ chat.showHistory }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63; padding-bottom: 4px;">RECENT CONVERSATIONS</div>
+            <sc-for list="{{ chat.history }}" as="hh" hint-placeholder-count="2">
+              <button onClick="{{ hh.open }}" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid rgba(22,23,26,0.1); border-radius: 12px; background: #fff; cursor: pointer; text-align: left;"><span style="flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: #16171A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ hh.title }}</span><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63;">{{ hh.when }}</span></button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ chat.showEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-family: 'Instrument Serif', serif; font-size: 30px; line-height: 1.05;">Ask about anything on AMDP.</div>
+            <div style="font-size: 13px; color: #5B5D63;">Products, data, models, access, or what your team uses. On a results page, I work with the results you're looking at.</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ chat.showThread }}" hint-placeholder-val="{{ true }}">
+          <sc-for list="{{ chat.msgs }}" as="m" hint-placeholder-count="1">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <sc-if value="{{ m.hasCtx }}" hint-placeholder-val="{{ false }}">
+                <div style="background: #fff; border: 1px solid rgba(22,23,26,0.1); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px;">
+                  <span style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.8px; color: #5B5D63;">FROM WHAT YOU'LL NEED · {{ m.ctxName }}</span>
+                  <sc-for list="{{ m.ctxItems }}" as="ci" hint-placeholder-count="2"><span style="display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.45;"><span style="width: 6px; height: 6px; margin-top: 6px; flex-shrink: 0; border-radius: 999px; background: {{ ci.dot }};"></span><span><strong>{{ ci.label }}:</strong> {{ ci.t }}</span></span></sc-for>
+                </div>
+              </sc-if>
+              <div style="align-self: flex-end; background: #fff; border: 1px solid rgba(22,23,26,0.1); border-radius: 14px; padding: 9px 13px; max-width: 380px;">{{ m.q }}</div>
+              <p style="margin: 0;">{{ m.a }}</p>
+              <sc-if value="{{ m.isCompare }}" hint-placeholder-val="{{ false }}">
+                <div style="background: #fff; border: 1px solid rgba(22,23,26,0.1); border-radius: 12px; overflow: hidden; font-size: 13px; line-height: 1.45;">
+                  <div style="display: grid; grid-template-columns: 120px minmax(0, 1fr) minmax(0, 1fr); border-bottom: 1px solid rgba(22,23,26,0.1); font-weight: 600;"><span></span><span style="padding: 9px 10px; border-left: 1px solid rgba(22,23,26,0.08);">{{ m.colA }}</span><span style="padding: 9px 10px; border-left: 1px solid rgba(22,23,26,0.08);">{{ m.colB }}</span></div>
+                  <sc-for list="{{ m.rows }}" as="rw" hint-placeholder-count="4"><div style="display: grid; grid-template-columns: 120px minmax(0, 1fr) minmax(0, 1fr); border-bottom: 1px solid rgba(22,23,26,0.06);"><span style="padding: 8px 10px; font-weight: 600;">{{ rw.l }}</span><span style="padding: 8px 10px; border-left: 1px solid rgba(22,23,26,0.08);">{{ rw.a }}</span><span style="padding: 8px 10px; border-left: 1px solid rgba(22,23,26,0.08);">{{ rw.b }}</span></div></sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ m.hasChanged }}" hint-placeholder-val="{{ false }}"><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B4BFF;">{{ m.changed }}</span></sc-if>
+            </div>
+          </sc-for>
+        </sc-if>
+      </div>
+      <form onSubmit="{{ chat.submit }}" style="margin: 0 14px 14px; background: #fff; border: 1px solid rgba(22,23,26,0.14); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <input name="m" autoComplete="off" placeholder="Ask, clarify or narrow results" style="flex: 1; min-width: 0; border: 0; outline: none; font-family: 'Geist', sans-serif; font-size: 14px; background: transparent; color: #16171A;">
+          <button type="submit" aria-label="Send" style="width: 30px; height: 30px; border: 0; border-radius: 9px; background: #16171A; color: #F6F4EF; cursor: pointer;">↑</button>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <sc-for list="{{ chat.chips }}" as="c" hint-placeholder-count="2"><button type="button" onClick="{{ c.ask }}" style="cursor: pointer; font-size: 12px; padding: 6px 10px; border-radius: 8px; background: #F1EEE7; border: 1px solid transparent; color: #16171A; white-space: nowrap;">{{ c.label }}</button></sc-for>
+        </div>
+      </form>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ chat.pill }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; right: 24px; bottom: 24px; z-index: 25; display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 16px; border-radius: 14px; background: #16171A; color: #F6F4EF; font-size: 13px; box-shadow: 0 16px 32px -16px rgba(22,23,26,0.6);">
+      <button onClick="{{ chat.restore }}" style="display: flex; align-items: center; gap: 10px; border: 0; background: transparent; color: #F6F4EF; font-size: 13px; cursor: pointer; padding: 6px 4px;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #8F84FF;"></span>Conversation · {{ chat.count }}<span style="opacity: 0.6;">Reopen</span></button>
+      <button onClick="{{ chat.dismiss }}" title="End conversation" style="width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: #F6F4EF; opacity: 0.7; cursor: pointer; font-size: 15px;">×</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ fly.has }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ fly.close }}" style="position: fixed; top: 64px; left: 0; right: 0; bottom: 0; z-index: 40; background: rgba(22,23,26,0.18);"></div>
+    <aside data-screen-label="Detail flyout" style="position: fixed; top: 64px; right: 0; bottom: 0; z-index: 41; width: min(480px, 100vw); background: #fff; box-shadow: -30px 0 60px -30px rgba(22,23,26,0.35); display: flex; flex-direction: column;">
+      <div style="padding: 24px 24px 18px; display: flex; flex-direction: column; gap: 14px; border-bottom: 1px solid rgba(22,23,26,0.08);">
+        <div style="display: flex; align-items: flex-start; gap: 14px;">
+          <span style="width: 48px; height: 48px; flex-shrink: 0; border-radius: 13px; background: {{ fly.it.tile }}; color: {{ fly.it.ink }}; font-family: 'Geist Mono', monospace; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ fly.it.mono }}</span>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.8px; color: {{ fly.it.ink }}; text-transform: uppercase;">{{ fly.it.typeLabel }} · {{ fly.it.area }} · {{ fly.it.lob }}</div>
+            <div style="font-family: 'Instrument Serif', serif; font-size: 34px; line-height: 1.05; margin-top: 2px;">{{ fly.it.name }}</div>
+            <div style="font-size: 13px; color: #5B5D63; margin-top: 2px;">{{ fly.it.owner }}</div>
+          </div>
+          <button onClick="{{ fly.close }}" aria-label="Close" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; font-size: 18px; color: #5B5D63;">×</button>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button onClick="{{ fly.it.launch }}" style="border: 0; cursor: pointer; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 12px; background: #16171A; color: #F6F4EF;">{{ fly.it.cta }} ↗</button>
+          <button onClick="{{ fly.it.pin }}" style="cursor: pointer; font-size: 14px; font-weight: 500; padding: 10px 14px; border-radius: 12px; background: {{ fly.it.pinBg }}; border: 1px solid rgba(22,23,26,0.18); color: #16171A;">{{ fly.it.pinLabel }}</button>
+          <button onClick="{{ fly.ask }}" style="cursor: pointer; font-size: 14px; font-weight: 500; padding: 10px 14px; border-radius: 12px; background: #EFEBFF; border: 1px solid rgba(91,75,255,0.25); color: #3A2BD9;">Ask about this</button>
+        </div>
+      </div>
+      <div style="flex: 1; overflow: auto; padding: 20px 24px 28px; display: flex; flex-direction: column; gap: 22px;">
+        <p style="margin: 0; font-size: 15px; line-height: 1.55;">{{ fly.it.desc }}</p>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;"><sc-for list="{{ fly.it.factsL }}" as="f" hint-placeholder-count="3"><span style="font-family: 'Geist Mono', monospace; font-size: 11px; padding: 3px 8px; border-radius: 6px; background: #EFECE4;">{{ f.f }}</span></sc-for></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <span style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #5B5D63;">GO STRAIGHT TO</span>
+          <sc-for list="{{ fly.it.jumpsL }}" as="j" hint-placeholder-count="3">
+            <button onClick="{{ j.go }}" style="display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-radius: 12px; background: transparent; border: 1px solid rgba(22,23,26,0.14); cursor: pointer; text-align: left; color: #16171A;" style-hover="border-color: #16171A;">
+              <span style="flex: 1; min-width: 0;"><span style="display: block; font-family: 'Geist Mono', monospace; font-size: 12px;">{{ j.path }}</span><span style="display: block; font-size: 12px; color: #5B5D63; margin-top: 2px;">{{ j.d }}</span></span><span style="color: #5B4BFF;">↗</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid rgba(22,23,26,0.08);">
+          <span style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #5B5D63;">WHAT IT TAKES</span>
+          <sc-for list="{{ fly.it.groups }}" as="g" hint-placeholder-count="2">
+            <div style="display: flex; flex-direction: column; gap: 3px;"><span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;"><span style="width: 7px; height: 7px; border-radius: 999px; background: {{ g.dot }};"></span>{{ g.label }}</span><sc-for list="{{ g.items }}" as="i" hint-placeholder-count="1"><span style="padding-left: 13px; font-size: 13px; line-height: 1.45;">{{ i.t }}</span></sc-for></div>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid rgba(22,23,26,0.08);">
+          <span style="font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #5B5D63;">OFTEN USED WITH</span>
+          <sc-for list="{{ fly.related }}" as="x" hint-placeholder-count="3">
+            <button onClick="{{ x.open }}" style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border: 0; background: transparent; cursor: pointer; text-align: left; color: #16171A;"><span style="width: 26px; height: 26px; border-radius: 7px; background: {{ x.tile }}; color: {{ x.ink }}; font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ x.mono }}</span><span style="flex: 1; font-size: 13px; font-weight: 600;">{{ x.name }}</span><span style="font-family: 'Geist Mono', monospace; font-size: 10px; color: #5B5D63;">{{ x.typeLabel }}</span></button>
+          </sc-for>
+        </div>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ pal.open }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ pal.close }}" style="position: fixed; inset: 0; z-index: 44; background: rgba(246,244,239,0.55);"></div>
+    <div data-screen-label="Search palette" style="position: fixed; left: {{ pal.x }}px; top: {{ pal.y }}px; z-index: 47; width: {{ pal.w }}px; max-height: calc(100vh - {{ pal.y }}px - 24px); display: flex; flex-direction: column; background: rgba(255,255,255,0.96); border: 1px solid rgba(22,23,26,0.12); border-radius: 22px; box-shadow: 0 40px 80px -40px rgba(22,23,26,0.45); overflow: hidden;">
+      
+      <div style="flex: 1; min-height: 0; overflow: auto; padding: 18px 22px 20px; display: flex; flex-direction: column; gap: 14px;">
+        <sc-if value="{{ pal.isNoMatch }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size: 15px;">Nothing matches "{{ pal.q }}" yet.</div>
+          <sc-if value="{{ pal.hasDym }}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;"><span style="font-size: 13px; color: #5B5D63;">Did you mean</span><sc-for list="{{ pal.dym }}" as="d" hint-placeholder-count="2"><button onClick="{{ d.go }}" style="cursor: pointer; font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 8px; background: #ECE9FF; border: 0; color: #3A2BD9;">{{ d.q }}</button></sc-for></div></sc-if>
+        </sc-if>
+        <sc-if value="{{ pal.isEmpty }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ pal.hasRecent }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63;">RECENT</div>
+            <sc-for list="{{ pal.recent }}" as="q" hint-placeholder-count="2"><button onClick="{{ q.go }}" style="border: 0; border-top: 1px solid rgba(22,23,26,0.08); background: transparent; padding: 10px 4px; cursor: pointer; text-align: left; font-size: 15px; color: #16171A;">{{ q.q }}</button></sc-for>
+          </sc-if>
+          <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63;">TRY</div>
+          <sc-for list="{{ pal.tries }}" as="q" hint-placeholder-count="5">
+            <button onClick="{{ q.go }}" style="border: 0; border-top: 1px solid rgba(22,23,26,0.08); background: transparent; padding: 10px 4px; cursor: pointer; display: flex; align-items: baseline; gap: 12px; text-align: left; color: #16171A;"><span style="font-size: 15px; flex: 1;">{{ q.q }}</span><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #8A8C91;">{{ q.kind }}</span></button>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ pal.isLaunch }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; background: #fff; border: 1px solid rgba(22,23,26,0.14); flex-wrap: wrap;">
+            <span style="width: 44px; height: 44px; border-radius: 12px; background: {{ pal.top.tile }}; color: {{ pal.top.ink }}; font-family: 'Geist Mono', monospace; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ pal.top.mono }}</span>
+            <div style="flex: 1; min-width: 160px;"><div style="font-family: 'Instrument Serif', serif; font-size: 28px; line-height: 1;">{{ pal.top.name }}</div><div style="font-size: 13px; color: #5B5D63; margin-top: 4px;">{{ pal.top.typeLabel }} · {{ pal.top.area }} · {{ pal.top.desc }}</div></div>
+            <button onClick="{{ pal.top.launch }}" style="border: 0; cursor: pointer; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 12px; background: #16171A; color: #F6F4EF;">{{ pal.top.cta }} ↗</button>
+          </div>
+          <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63;">JUMP STRAIGHT IN</div>
+          <sc-for list="{{ pal.top.jumpsL }}" as="d" hint-placeholder-count="3">
+            <button onClick="{{ d.go }}" style="display: flex; align-items: center; gap: 12px; padding: 10px 4px; border: 0; border-top: 1px solid rgba(22,23,26,0.08); background: transparent; cursor: pointer; text-align: left; color: #16171A; flex-wrap: wrap;"><span style="font-family: 'Geist Mono', monospace; font-size: 13px;">{{ d.path }}</span><span style="flex: 1; min-width: 160px; font-size: 13px; color: #5B5D63;">{{ d.d }}</span><span style="color: #5B4BFF;">↗</span></button>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ pal.isClarify }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #5B4BFF; box-shadow: 0 0 0 4px rgba(91,75,255,0.18);"></span><span style="font-family: 'Instrument Serif', serif; font-size: 30px; line-height: 1;">{{ pal.ask }}</span><span style="font-size: 13px; color: #5B5D63;">{{ pal.hint }}</span></div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+            <sc-for list="{{ pal.options }}" as="o" hint-placeholder-count="3">
+              <button onClick="{{ o.go }}" style="padding: 14px; border-radius: 14px; background: #fff; border: 1px solid rgba(22,23,26,0.14); display: flex; flex-direction: column; gap: 8px; cursor: pointer; text-align: left; color: #16171A;" style-hover="border-color: #16171A;">
+                <span style="width: 28px; height: 28px; border-radius: 8px; background: {{ o.tile }}; color: {{ o.ink }}; font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ o.mono }}</span>
+                <span style="font-size: 17px; font-weight: 600;">{{ o.t }}</span><span style="font-size: 12px; color: #5B5D63;">{{ o.d }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ pal.hasAnswerLine }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 12px; align-items: flex-start;"><span style="width: 8px; height: 8px; margin-top: 10px; flex-shrink: 0; border-radius: 999px; background: #5B4BFF; box-shadow: 0 0 0 4px rgba(91,75,255,0.18);"></span><span style="font-family: 'Instrument Serif', serif; font-size: 26px; line-height: 1.2;">{{ pal.answer }}</span></div>
+        </sc-if>
+        <sc-if value="{{ pal.hasDests }}" hint-placeholder-val="{{ false }}">
+          <sc-for list="{{ pal.dests }}" as="d" hint-placeholder-count="2">
+            <button onClick="{{ d.go }}" style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: {{ d.bg }}; border: {{ d.border }}; cursor: pointer; text-align: left; color: #16171A; flex-wrap: wrap;">
+              <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: {{ d.tile }}; color: {{ d.ink }}; font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ d.mono }}</span>
+              <span style="flex: 1; min-width: 200px;"><span style="display: block; font-family: 'Geist Mono', monospace; font-size: 14px;">{{ d.path }}</span><span style="display: block; font-size: 13px; color: #5B5D63; margin-top: 3px;">{{ d.d }}</span></span>
+              <span style="font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 10px; border: 1px solid rgba(22,23,26,0.2); white-space: nowrap;">{{ d.cta }} ↗</span>
+            </button>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ pal.hasTakes }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid rgba(22,23,26,0.08);">
+            <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63;">WHAT IT TAKES</div>
+            <sc-for list="{{ pal.takes }}" as="k" hint-placeholder-count="2"><div style="display: flex; align-items: center; gap: 10px; font-size: 14px;"><span style="width: 6px; height: 6px; border-radius: 999px; background: {{ k.dot }};"></span>{{ k.t }}</div></sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ pal.hasMatches }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 1px; color: #5B5D63;">TOP MATCHES</div>
+          <sc-for list="{{ pal.matches }}" as="m" hint-placeholder-count="4">
+            <button onClick="{{ m.open }}" style="display: flex; align-items: center; gap: 12px; padding: 9px 4px; border: 0; border-top: 1px solid rgba(22,23,26,0.08); background: transparent; cursor: pointer; text-align: left; color: #16171A;"><span style="width: 26px; height: 26px; border-radius: 7px; background: {{ m.tile }}; color: {{ m.ink }}; font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center;">{{ m.mono }}</span><span style="font-size: 14px; font-weight: 600;">{{ m.name }}</span><span style="flex: 1; font-family: 'Geist Mono', monospace; font-size: 10px; color: {{ m.ink }}; text-transform: uppercase;">{{ m.typeLabel }}</span><span style="font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63;">{{ m.status }}</span></button>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ pal.hasFull }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ pal.full }}" style="align-self: flex-start; border: 0; background: transparent; padding: 4px 0; cursor: pointer; font-size: 14px; font-weight: 600; color: #5B4BFF;">See all results for "{{ pal.q }}" →</button>
+        </sc-if>
+      </div>
+      <div style="display: flex; align-items: center; gap: 18px; padding: 10px 22px; background: #F1EEE7; font-family: 'Geist Mono', monospace; font-size: 11px; color: #5B5D63; flex-wrap: wrap;"><span>Enter to open</span><span>Esc to close</span><span>Works with names, keywords, tasks, questions and goals</span></div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startAs&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Day 0&quot;,&quot;Day 0.5&quot;,&quot;Day 1&quot;],&quot;default&quot;:&quot;Day 0&quot;,&quot;tsType&quot;:&quot;'Day 0'|'Day 0.5'|'Day 1'&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+const G = '#1F9D63', A = '#D98B0B', R = '#C2412D', P = '#5B4BFF', MU = 'rgba(22,23,26,0.25)';
+const AREA_T = { AI: ['#ECE9FF', P], ML: ['#E4EEFB', '#1F5FA8'], Governance: ['#E3EEDD', '#3E6B1F'], Data: ['#DDF2EC', '#0F7A5C'] };
+const TYPE_T = { dashboard: ['#E6E8EE', '#3A3F4B'], agent: ['#FBF1DC', '#9A5F00'], model: ['#F3E6F7', '#7A2E8F'], dataset: ['#DDF2EC', '#0F7A5C'], doc: ['#EAE6DC', '#5B5D63'], sdk: ['#E6E8EE', '#3A3F4B'], service: ['#E6E8EE', '#3A3F4B'], directory: ['#FBF1DC', '#9A5F00'] };
+const TYPE_L = { dashboard: 'Dashboard', product: 'Product', agent: 'Agent', model: 'Model', dataset: 'Dataset', doc: 'Doc', sdk: 'SDK', service: 'Service', directory: 'Directory' };
+const TYPE_TAB = { dashboard: 'Dashboards', product: 'Products', agent: 'Agents', model: 'Models', dataset: 'Datasets', doc: 'Docs', sdk: 'SDKs', service: 'Services', directory: 'Directories' };
+const ACC = { now: ['Ready now', G], view: ['Can view', G], start: ['Before you start', A], req: ['Request · about 2 days', A], mid: ['Request · about 3 weeks', A], long: ['Request · about 3 months', R] };
+const STAT = { start: ['Before you start', A], approval: ['Needs approval', A], later: ['Before you deploy', MU], ready: ['Ready now', G] };
+const SORD = ['start', 'approval', 'later', 'ready'];
+const AREAS = [
+  { key: 'AI', name: 'AI', d: 'Agents, GenAI and LLM access', jobs: [['Use or build an agent', 'Agent Studio, Agent SDK', 'I want to build an agent'], ['Call an approved LLM', 'AI Gateway', 'call an approved LLM'], ['Ground AI in documents', 'Knowledge Hub', 'ground an agent in our documents']] },
+  { key: 'ML', name: 'ML', d: 'Models, training and compute', jobs: [['Train or fine-tune a model', 'Nexa, SageMaker', 'improve our client churn model'], ['Get GPU capacity', 'Nexa › GPU requests', 'request gpus for fine-tuning'], ['Compare and register models', 'Model Hub', 'compare models']] },
+  { key: 'Governance', name: 'Governance', d: 'AI and data approvals and risk', jobs: [['Register an AI use case', 'AI Governance Hub', 'register an AI use case'], ['Request data access', 'Data Access Requests', 'who approves access to client data?'], ['Check a model\u2019s approval', 'Model Hub › Reviews', 'check a model approval']] },
+  { key: 'Data', name: 'Data management', d: 'Find, trace and trust data', jobs: [['Find a dataset', 'Data Catalog', 'find client data'], ['Trace lineage', 'Lineage Explorer', 'lineage client_positions_daily'], ['Check data quality', 'Data Quality', 'data quality checks']] }
+];
+const it = (o) => o;
+const I = {
+  studio: it({ type: 'product', area: 'AI', mono: 'AS', name: 'Agent Studio', owner: 'AI Platform team', lob: 'Firmwide', desc: 'Drag-and-drop agent builder with templates and built-in testing.', facts: ['1,240 builders', '4.7 rating'], acc: 'now', cta: 'Launch', fit: 'Best if you want to build visually', usage: '1,240 builders · 18 on your team', team: 18, needs: [['ready', 'You have access. Start building now.'], ['later', 'Link a use case to save or deploy your agent']], jumps: [['Agent Studio › Templates › Document Q&A', 'Retrieval and citations set up'], ['Agent Studio › New project', 'Start from a blank canvas'], ['Agent Studio › My agents', 'Drafts and published agents']] }),
+  sdk: it({ type: 'sdk', area: 'AI', mono: 'SD', name: 'Agent SDK', owner: 'AI Platform team', lob: 'Firmwide', desc: 'Python SDK for agents, from simple assistants to multi-step workflows.', facts: ['9.4k installs', 'v2.4'], acc: 'start', cta: 'Open docs', fit: 'Best if you want full control in code', usage: '860 developers · 4 on your team', team: 4, needs: [['start', 'An AI Gateway key for model calls'], ['later', 'Model risk review before production'], ['ready', 'Package and docs are open to all developers']], jumps: [['Agent SDK › Docs › Quickstart', 'Install and run your first agent'], ['Agent SDK › Docs › Retrieval agent', 'Template for document Q&A']] }),
+  kh: it({ type: 'product', area: 'AI', mono: 'KH', name: 'Knowledge Hub', owner: 'AI Governance', lob: 'Firmwide', desc: 'Approved knowledge sources your agents can be grounded in.', facts: ['920 weekly users'], acc: 'req', cta: 'Launch', fit: 'Best for grounding agents in approved documents', usage: '920 weekly users', team: 7, needs: [['approval', 'Owner approval for each new SharePoint site, about 1 day'], ['ready', 'Browse approved sources']], jumps: [['Knowledge Hub › Sources › Add SharePoint site', 'Request a new source'], ['Knowledge Hub › Sources', 'Browse what\u2019s approved']] }),
+  skills: it({ type: 'directory', area: 'AI', mono: 'SK', name: 'Agent Skills Directory', owner: 'AI Governance', lob: 'Firmwide', desc: 'Governed directory of reusable skills and plugins.', facts: ['42 new this month'], acc: 'now', cta: 'Browse', team: 9, needs: [['ready', 'Open to everyone']], jumps: [['Skills Directory › Citations', 'Most used with Agent Studio'], ['Skills Directory › Publish', 'Share your own skill']] }),
+  mcp: it({ type: 'directory', area: 'AI', mono: 'MC', name: 'MCP Directory', owner: 'AI Platform team', lob: 'Firmwide', desc: 'Approved MCP servers that connect agents to tools and data.', facts: ['6 added this month'], acc: 'now', cta: 'Browse', team: 6, needs: [['approval', 'Approval to connect a server to production data'], ['ready', 'Browse and test servers anytime']], jumps: [['MCP Directory › Snowflake server', 'Most requested'], ['MCP Directory › All servers', 'Browse by system']] }),
+  gateway: it({ type: 'service', area: 'AI', mono: 'GW', name: 'AI Gateway', owner: 'AI Platform team', lob: 'Firmwide', desc: 'One governed API for every approved LLM provider.', facts: ['3.4k callers'], acc: 'start', cta: 'Open docs', team: 16, needs: [['start', 'An API key tied to a use case']], jumps: [['AI Gateway › Keys › Request', 'Get a key for your use case'], ['AI Gateway › Models', 'Approved models and limits']] }),
+  policy: it({ type: 'agent', area: 'AI', mono: 'PH', name: 'Policy Helper', owner: 'AWM Ops', lob: 'AWM', desc: 'Answers questions from AWM Policies and cites the page.', facts: ['120 users', 'Agent Studio'], acc: 'long', cta: 'View blueprint', team: 3, needs: [['approval', 'Access to use the agent, about 3 months'], ['ready', 'Blueprint and template are open now']], jumps: [['Agent Directory › Policy Helper › Blueprint', 'How it\u2019s built'], ['Agent Studio › Templates › Document Q&A', 'The template it started from']] }),
+  retention: it({ type: 'agent', area: 'AI', mono: 'RA', name: 'Retention Assistant', owner: 'CCB Digital', lob: 'CCB', desc: 'Explains why a client is at risk and suggests next actions.', facts: ['2.1k users', 'CCB only'], acc: 'long', cta: 'View card', team: 0, needs: [['approval', 'Cross-LOB access, about 3 months'], ['ready', 'Agent card is open now']], jumps: [['Agent Directory › Retention Assistant › Card', 'How it works and who owns it']] }),
+  nexa: it({ type: 'product', area: 'ML', mono: 'NX', name: 'Nexa', owner: 'ML Platform team', lob: 'Firmwide', desc: 'Data prep, training, experiment tracking and model registration.', facts: ['1.6k weekly users'], acc: 'start', cta: 'Launch', fit: 'Best for training on firm GPUs', usage: '1.6k weekly users · 12 on your team', team: 12, needs: [['start', 'A registered use case to create a project'], ['approval', 'GPU quota approval, about 2 days'], ['ready', 'Browse templates and docs']], jumps: [['Nexa › GPU requests › New request', 'Request or extend capacity'], ['Nexa › Experiments', 'Your runs and comparisons'], ['Nexa › Templates › Tabular classification', 'Start a churn-style model']] }),
+  sage: it({ type: 'product', area: 'ML', mono: 'SM', name: 'SageMaker Studio', owner: 'Cloud ML Engineering', lob: 'Firmwide', desc: 'Managed notebooks, training jobs and endpoints in AWS.', facts: ['2.0k weekly users'], acc: 'start', cta: 'Launch', fit: 'Best if your team already works in AWS', usage: '2.0k weekly users · 8 on your team', team: 8, needs: [['start', 'Access to a firm AWS account'], ['approval', 'Data access approval for each dataset']], jumps: [['SageMaker Studio › Notebooks', 'Open managed notebooks'], ['SageMaker Studio › Instances', 'GPU instances in AWS']] }),
+  hub: it({ type: 'product', area: 'ML', mono: 'MH', name: 'Model Hub', owner: 'ML Platform team', lob: 'Firmwide', desc: 'Compare, register and review approved models.', facts: ['1.8k weekly users'], acc: 'now', cta: 'Launch', fit: 'Best for comparing approved models', usage: '1.8k weekly users', team: 11, needs: [['ready', 'Browse and compare models'], ['later', 'Model risk review to publish a model']], jumps: [['Model Hub › Compare', 'Benchmarks side by side'], ['Model Hub › Reviews', 'Approval status by model']] }),
+  churn: it({ type: 'model', area: 'ML', mono: 'CM', name: 'Churn model v3', owner: 'AWM Client Analytics · your team', lob: 'AWM', desc: 'Predicts 90-day client attrition from account and engagement features.', facts: ['Approved · Tier 2', 'AUC 0.87'], acc: 'now', cta: 'Open in Model Hub', team: 6, needs: [['ready', 'You have access']], jumps: [['Model Hub › Churn model v3', 'Metrics, versions and model card'], ['Nexa › Experiments › 214', 'Fork the experiment']] }),
+  attrition: it({ type: 'model', area: 'ML', mono: 'AE', name: 'Attrition early-warning', owner: 'CIB Coverage Analytics', lob: 'CIB', desc: 'Flags institutional clients at risk of reducing wallet share.', facts: ['Approved · Tier 2', 'CIB only'], acc: 'long', cta: 'View model card', team: 0, needs: [['approval', 'Cross-LOB reuse, about 3 months'], ['ready', 'Model card is open now']], jumps: [['Model Hub › Attrition early-warning › Card', 'Features and validation']] }),
+  playbook: it({ type: 'doc', area: 'ML', mono: 'PB', name: 'Churn modeling playbook', owner: 'AWM Data Science', lob: 'AWM', desc: 'How AWM builds, validates and gets churn models approved.', facts: ['Confluence', 'Updated Sep'], acc: 'view', cta: 'Open doc', team: 0, needs: [['ready', 'Open to AWM']], jumps: [['Confluence › AWM Data Science › Churn playbook', 'Read the playbook']] }),
+  catalog: it({ type: 'product', area: 'Data', mono: 'DC', name: 'Data Catalog', owner: 'Chief Data Office', lob: 'Firmwide', desc: 'Find governed datasets, owners and classifications.', facts: ['4.2k weekly users'], acc: 'now', cta: 'Launch', fit: 'Best for finding a dataset and its owner', usage: '4.2k weekly users', team: 21, needs: [['ready', 'Search and browse anytime']], jumps: [['Data Catalog › Search', 'Find by name, column or owner'], ['Data Catalog › Owners', 'Who owns what']] }),
+  lineage: it({ type: 'product', area: 'Data', mono: 'LX', name: 'Lineage Explorer', owner: 'Chief Data Office', lob: 'Firmwide', desc: 'Trace data upstream and downstream, down to the column.', facts: ['Column-level'], acc: 'now', cta: 'Launch', fit: 'Best for tracing where data comes from', usage: '1.1k weekly users', team: 5, needs: [['ready', 'View lineage for any dataset you can see']], jumps: [['Lineage Explorer › client_positions_daily', 'You looked at this Monday'], ['Lineage Explorer › Impact analysis', 'What breaks if this changes']] }),
+  quality: it({ type: 'product', area: 'Data', mono: 'DQ', name: 'Data Quality', owner: 'Chief Data Office', lob: 'Firmwide', desc: 'Checks, scores and alerts for governed datasets.', facts: ['Alerts'], acc: 'now', cta: 'Launch', team: 4, needs: [['ready', 'View checks on datasets you can see']], jumps: [['Data Quality › My datasets', 'Failed checks this week']] }),
+  feat: it({ type: 'dataset', area: 'Data', mono: 'cf', name: 'client_churn_features', owner: 'Dana Ruiz', lob: 'AWM', desc: 'Daily feature table used by AWM churn and retention models.', facts: ['Confidential', '48 columns'], acc: 'req', cta: 'Open in Data Catalog', team: 0, needs: [['approval', 'Approval from Dana Ruiz (data owner), about 2 days']], jumps: [['Data Catalog › client_churn_features', 'Schema, owner and sample'], ['Data Access Requests › client_churn_features', 'Request access, form pre-filled']] }),
+  positions: it({ type: 'dataset', area: 'Data', mono: 'cp', name: 'client_positions_daily', owner: 'Dana Ruiz', lob: 'AWM', desc: 'End-of-day client positions across AWM accounts.', facts: ['Confidential', '2 checks failed'], acc: 'req', cta: 'Open lineage', team: 0, needs: [['approval', 'Approval from the data owner, about 2 days']], jumps: [['Lineage Explorer › client_positions_daily', 'Upstream and downstream'], ['Data Quality › client_positions_daily', '2 checks failed this week']] }),
+  events: it({ type: 'dataset', area: 'Data', mono: 'ce', name: 'client_events_raw', owner: 'Client Data Platform', lob: 'Firmwide', desc: 'Raw client interaction events across channels.', facts: ['Restricted', '2.1B rows'], acc: 'mid', cta: 'Open in Data Catalog', team: 0, needs: [['approval', 'Data owner approval plus a Data Risk review, about 3 weeks']], jumps: [['Data Catalog › client_events_raw', 'Schema and owner']] }),
+  govhub: it({ type: 'product', area: 'Governance', mono: 'GH', name: 'AI Governance Hub', owner: 'AI Governance', lob: 'Firmwide', desc: 'Register AI use cases and track their approvals.', facts: ['Use cases'], acc: 'now', cta: 'Launch', fit: 'Best for registering and tracking AI use cases', usage: '2.6k weekly users', team: 9, needs: [['ready', 'Register a use case anytime']], jumps: [['AI Governance Hub › Use cases › New', 'Register a use case'], ['AI Governance Hub › My use cases', 'Status and approvals']] }),
+  bench: it({ type: 'product', area: 'ML', mono: 'MB', name: 'Model Benchmarking', owner: 'ML Platform team', lob: 'Firmwide', desc: 'Run firm benchmarks on approved and in-house models before you choose one.', facts: ['42 benchmark suites'], acc: 'now', cta: 'Launch', fit: 'Best for comparing models before you choose', usage: '640 weekly users', team: 5, needs: [['ready', 'Run benchmarks on any approved model']], jumps: [['Model Benchmarking › Leaderboards', 'Approved models ranked by task'], ['Model Benchmarking › New run', 'Benchmark your own model']] }),
+  gpt: it({ type: 'model', area: 'AI', mono: 'G4', name: 'GPT-4o (firm-hosted)', owner: 'AI Platform team', lob: 'Firmwide', desc: 'General-purpose LLM available through AI Gateway.', facts: ['LLM', 'Approved'], acc: 'start', cta: 'Open in Model Hub', team: 14, needs: [['start', 'An AI Gateway key tied to a use case']], jumps: [['Model Hub › GPT-4o', 'Limits, pricing and approved uses'], ['Model Benchmarking › GPT-4o', 'How it scores on firm tasks']] }),
+  claude: it({ type: 'model', area: 'AI', mono: 'CL', name: 'Claude (firm-hosted)', owner: 'AI Platform team', lob: 'Firmwide', desc: 'LLM for long documents and careful reasoning, through AI Gateway.', facts: ['LLM', 'Approved'], acc: 'start', cta: 'Open in Model Hub', team: 9, needs: [['start', 'An AI Gateway key tied to a use case']], jumps: [['Model Hub › Claude', 'Limits and approved uses'], ['Model Benchmarking › Claude', 'How it scores on firm tasks']] }),
+  fraud: it({ type: 'model', area: 'ML', mono: 'FD', name: 'Card fraud detector v7', owner: 'CCB Fraud Analytics', lob: 'CCB', desc: 'Real-time scoring of card transactions for fraud risk.', facts: ['Approved · Tier 1', 'CCB only'], acc: 'long', cta: 'View model card', team: 0, needs: [['approval', 'Cross-LOB reuse, about 3 months'], ['ready', 'Model card is open now']], jumps: [['Model Hub › Card fraud detector v7 › Card', 'Features and validation']] }),
+  aum: it({ type: 'model', area: 'ML', mono: 'AF', name: 'AUM forecast', owner: 'AWM Finance Analytics', lob: 'AWM', desc: 'Monthly assets-under-management forecast by segment.', facts: ['Approved · Tier 3', 'Monthly'], acc: 'req', cta: 'Open in Model Hub', team: 3, needs: [['approval', 'Owner approval, about 2 days']], jumps: [['Model Hub › AUM forecast', 'Versions and model card']] }),
+  dashchurn: it({ type: 'dashboard', area: 'Data', mono: 'CH', name: 'AWM Client Churn Monitor', owner: 'AWM Client Analytics', lob: 'AWM', desc: 'Weekly churn rate by segment, advisor and product.', facts: ['Tableau', '340 viewers'], acc: 'view', cta: 'Open in Tableau', team: 11, needs: [['ready', 'You can view it']], jumps: [['Tableau › AWM Client Churn Monitor', 'View or subscribe']] }),
+  access: it({ type: 'product', area: 'Governance', mono: 'DA', name: 'Data Access Requests', owner: 'Data Risk', lob: 'Firmwide', desc: 'Request access to datasets. Requests route to the right owner.', facts: ['Avg 2 to 3 days'], acc: 'now', cta: 'Launch', fit: 'Best for requesting access to a dataset', usage: '3.1k requests a month', team: 14, needs: [['ready', 'Anyone can start a request']], jumps: [['Data Access Requests › New request', 'Routes to the data owner'], ['Data Access Requests › My requests', 'Status of what you asked for']] })
+};
+const TAGS = { studio: 'build agent no-code low-code visual canvas template', sdk: 'python code agent library developer', kh: 'knowledge grounding rag documents sharepoint retrieval', skills: 'skills plugins reuse', mcp: 'tools connectors integration server', gateway: 'llm api models keys gpt claude provider', policy: 'policy questions answers documents', retention: 'retention churn clients', nexa: 'training train fine-tune finetune gpu experiments ml notebooks', sage: 'aws notebooks training', hub: 'models registry compare register review approval card', churn: 'churn attrition retention', attrition: 'attrition churn', playbook: 'churn guide validation', catalog: 'find datasets data search owners table', lineage: 'lineage upstream downstream trace', quality: 'quality checks freshness', feat: 'features churn table', positions: 'positions holdings table', events: 'events interactions table', govhub: 'use case register approval governance risk', access: 'access request permission data', bench: 'benchmark benchmarking evaluate evaluation eval compare leaderboard accuracy', gpt: 'llm chat language openai', claude: 'llm chat language anthropic', fraud: 'fraud cards detection', aum: 'forecast assets aum', dashchurn: 'dashboard churn tableau report' };
+const TYPEWORD = [[/\b(models?|llms?)\b/, 'model'], [/\b(datasets?|tables?)\b/, 'dataset'], [/\bagents?\b/, 'agent'], [/\b(docs?|documentation|playbooks?)\b/, 'doc'], [/\b(dashboards?|reports?)\b/, 'dashboard'], [/\bsdks?\b/, 'sdk'], [/\bdirector(y|ies)\b/, 'directory'], [/\b(products?|apps?|tools?)\b/, 'product']];
+const TYPEINFO = {
+  model: { plural: 'models', rel: ['bench', 'hub', 'nexa'], sent: 'To compare them, use Model Benchmarking. To register or review one, use Model Hub. To train your own, use Nexa.', paa: [['How do I compare models?', 'Use Model Benchmarking to run firm benchmarks side by side, or Model Hub › Compare for published results.'], ['How do I get access to a model?', 'Approved LLMs are available through AI Gateway with a key tied to a use case. Firm-trained models need their owner’s approval.'], ['How do I register a model I built?', 'Register it in Model Hub, then complete a model risk review before production.']], related: ['compare models', 'improve our client churn model', 'call an approved LLM'] },
+  dataset: { plural: 'datasets', rel: ['catalog', 'lineage', 'access'], sent: 'Find more in the Data Catalog, trace them in Lineage Explorer, and request access through Data Access Requests.', paa: [['Who owns a dataset?', 'Every dataset in the Data Catalog lists its data owner. They approve access requests.'], ['How long does data access take?', 'Usually 2 to 3 days. Restricted data also needs a Data Risk review, about 3 weeks.']], related: ['find client data', 'lineage client_positions_daily', 'data quality checks'] },
+  agent: { plural: 'agents', rel: ['studio', 'sdk', 'skills'], sent: 'To build your own, use Agent Studio or the Agent SDK. Using another team’s agent can take months, but its blueprint and template are usually open.', paa: [['Can I use another team’s agent?', 'Usually, with approval. Cross-LOB access can take about 3 months, so start from its template or blueprint.']], related: ['I want to build an agent', 'ground an agent in our documents'] },
+  dashboard: { plural: 'dashboards', rel: ['catalog'], sent: 'Dashboards list the models and datasets they’re built on.', paa: [], related: [] },
+  doc: { plural: 'docs', rel: [], sent: '', paa: [], related: [] },
+  product: { plural: 'products', rel: [], sent: 'Browse by area to see what each one is for.', paa: [], related: [] },
+  sdk: { plural: 'SDKs', rel: ['gateway'], sent: '', paa: [], related: [] },
+  directory: { plural: 'directories', rel: [], sent: '', paa: [], related: [] }
+};
+const STOP = new Set(['the', 'and', 'for', 'our', 'with', 'want', 'need', 'how', 'what', 'who', 'can', 'use', 'get', 'find', 'show', 'all', 'any', 'into', 'from', 'that', 'this', 'about', 'build', 'make']);
+const txt = id => (I[id].name + ' ' + I[id].desc + ' ' + I[id].owner + ' ' + (TAGS[id] || '') + ' ' + TYPE_L[I[id].type]).toLowerCase();
+const typeOf = q => { const m = TYPEWORD.find(([re]) => re.test(q.toLowerCase())); return m ? m[1] : null; };
+const rank = (q, t) => {
+  const lt = q.toLowerCase().trim(), ws = lt.split(/[^a-z0-9_]+/).filter(w => w.length > 2 && !STOP.has(w)).map(w => w.replace(/s$/, ''));
+  return Object.keys(I).map(id => { const n = I[id].name.toLowerCase(), tg = (TAGS[id] || ''), all = txt(id); let s = 0;
+    if (n === lt) s += 20; else if (n.includes(lt) && lt.length > 2) s += 12;
+    ws.forEach(w => { if (n.includes(w)) s += 6; if (tg.includes(w)) s += 4; if (all.includes(w)) s += 2; });
+    if (t && I[id].type === t) s += 10; if (t && TYPEINFO[t].rel.includes(id)) s += 7;
+    return [id, s + (s ? (I[id].team || 0) / 20 : 0)]; }).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]).map(x => x[0]);
+};
+const lev = (a, b) => { const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]); for (let j = 1; j <= b.length; j++) d[0][j] = j; for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; };
+const VOCAB = [...new Set(Object.keys(I).flatMap(id => (I[id].name + ' ' + (TAGS[id] || '')).toLowerCase().split(/[^a-z0-9_]+/)).filter(w => w.length > 3))];
+const didYouMean = q => { const ws = q.toLowerCase().split(/\s+/); const out = ws.map(w => { if (VOCAB.includes(w)) return w; let best = null, bd = 3; VOCAB.forEach(v => { const dd = lev(w, v); if (dd < bd) { bd = dd; best = v; } }); return best; }); return out.every(Boolean) && out.join(' ') !== q.toLowerCase() ? [out.join(' ')] : []; };
+const SC = {
+  agent: { re: /agent|assistant|chatbot|copilot|ground|llm|mcp|skill/i, summary: 'There are two ways to build an agent: visually in Agent Studio or in code with the Agent SDK. Both use the same governed models, so the main question is whether you want to write code.', recos: ['studio', 'sdk'],
+    start: [['USE A TEMPLATE', 'Document Q&A', 'Start in Agent Studio with retrieval and citations set up.', 'Open now', G, 'Agent Studio › Templates', 'studio'], ['VIEW THE BLUEPRINT', 'Policy Helper', 'See how AWM Ops built it and which products it uses.', 'Open now', G, 'Agent Directory › Blueprint', 'policy'], ['USE IT', 'Policy Helper', 'Use the agent itself if it covers your documents.', 'Request · about 3 months', R, 'Agent Directory › Request', 'policy'], ['LEARN FROM IT', 'Retention Assistant (CCB)', 'Read how another line of business solved a similar problem.', 'Card is open', A, 'Agent Directory › Card', 'retention']],
+    startSum: 'A template, a blueprint, or an agent that already does this', anchor: 'studio', stack: [['kh', 'Answer from approved documents', true], ['skills', 'Reusable skills', true], ['mcp', 'Connect tools and data', false]],
+    results: ['studio', 'sdk', 'policy', 'kh', 'skills', 'mcp', 'gateway', 'retention'],
+    paa: [['What\u2019s the difference between Agent Studio and the Agent SDK?', 'Agent Studio is visual and needs no code. The Agent SDK is a Python library for engineers who want full control. Both call models through AI Gateway.'], ['Can my agent read SharePoint documents?', 'Yes. Register the site in Knowledge Hub. The site owner approves it, usually within a day.'], ['How do I get my agent approved for production?', 'Link it to a use case in AI Governance Hub, then complete a model risk review. Agents built from pre-approved Studio templates skip most of the review.']],
+    related: ['ground an agent in our documents', 'register an AI use case', 'call an approved LLM'],
+    chips: [['compare', 'Compare Agent Studio and Agent SDK'], ['approval', 'Which of these need approval?'], ['team', 'What has my team built?']],
+    ans: { compare: ['Choose Agent Studio unless you need custom logic or CI deployment. Both use the same models, but only Studio has a built-in Knowledge Hub connector.', 'Agent Studio', 'Agent SDK', [['Coding', 'None', 'Python'], ['First agent', 'About 1 hour', 'About 1 day'], ['Knowledge Hub', 'Built in', 'Through the SDK'], ['Approval', 'Pre-approved patterns', 'Model risk review']]], approval: 'Knowledge Hub needs owner approval for each new SharePoint site (about 1 day). Agent Studio needs a linked use case before you publish. Using Policy Helper directly takes about 3 months, but its template is open now.', team: 'Your AWM team has built 3 agents: Policy Helper and Onboarding Bot in Agent Studio, and Trade Break Triage with the Agent SDK.' } },
+  ml: { re: /model|train|fine|churn|gpu|experiment|\bml\b|nexa|sagemaker|feature/i, summary: 'Don\u2019t start from zero. Your team\u2019s Churn model v3 is approved, and its Nexa experiment can be forked. Most teams retrain in Nexa on firm GPUs. Use SageMaker Studio only if your data already lives in AWS.', recos: ['nexa', 'sage'],
+    start: [['USE IT', 'Churn model v3', 'Your team\u2019s approved model. Score clients today.', 'You have access', G, 'Model Hub › Churn model v3', 'churn'], ['FORK IT', 'Experiment 214', 'Retrain on new features with the same pipeline.', 'You have access', G, 'Nexa › Experiments › 214', 'nexa'], ['COPY THE APPROACH', 'Tabular classification template', 'Start a new model with validation built in.', 'Open to everyone', G, 'Nexa › Templates', 'nexa'], ['LEARN FROM IT', 'Attrition early-warning (CIB)', 'Read the model card. Reusing it takes about 3 months.', 'Card is open', A, 'Model Hub › Model card', 'attrition']],
+    startSum: 'Your team\u2019s model, its experiment, a template, or another team\u2019s model card', anchor: 'nexa', stack: [['feat', 'The dataset Churn model v3 uses', true], ['hub', 'Register and compare versions', true], ['catalog', 'Find more training data', false]],
+    results: ['churn', 'nexa', 'feat', 'sage', 'hub', 'playbook', 'attrition', 'events'],
+    paa: [['Should I use Nexa or SageMaker Studio?', 'Use Nexa for end-to-end training on managed firm GPUs. Use SageMaker Studio if your team and data already live in AWS.'], ['How do I get GPU capacity?', 'Request a quota in Nexa › GPU requests against a registered use case. Approval usually takes 1 to 2 days.'], ['How do I deploy a model I retrained?', 'Register it in Model Hub, complete a model risk review, then deploy from Nexa or SageMaker.']],
+    related: ['request gpus for fine-tuning', 'compare models', 'find client data'],
+    chips: [['compare', 'Compare Nexa and SageMaker'], ['approval', 'What needs approval?'], ['team', 'What has my team trained?']],
+    ans: { compare: ['Choose Nexa for managed firm GPUs and experiment tracking in one place. Choose SageMaker Studio if your team already runs on AWS.', 'Nexa', 'SageMaker', [['Runs on', 'Firm GPU cluster', 'Your AWS account'], ['GPUs', 'Nexa › GPU requests', 'AWS instances'], ['Data', 'Snowflake, Databricks', 'S3 and Snowflake'], ['Approval', 'Use case required', 'Cloud review']]], approval: 'GPU quota needs manager approval (about 2 days) and a registered use case. client_churn_features needs data owner approval, about 2 days.', team: 'Your AWM team trained 4 models last quarter, mostly in Nexa. The most used is Churn model v3.' } },
+  data: { re: /data|dataset|lineage|catalog|quality|table|column|client_/i, summary: 'Start in the Data Catalog to find a dataset and its owner, then trace it in Lineage Explorer. If you need access, Data Access Requests sends your request to the right owner.', recos: ['catalog', 'lineage'],
+    start: [['OPEN IT', 'client_positions_daily', 'You looked at its lineage on Monday.', 'Request · about 2 days', A, 'Lineage Explorer › client_positions_daily', 'positions'], ['REUSE IT', 'client_churn_features', 'The feature table your team\u2019s churn model uses.', 'Request · about 2 days', A, 'Data Catalog › client_churn_features', 'feat'], ['CHECK IT', 'Data Quality › My datasets', '2 checks failed this week on datasets you follow.', 'Ready now', G, 'Data Quality', 'quality']],
+    startSum: 'Datasets you\u2019ve looked at, and the ones your team uses', anchor: 'catalog', stack: [['lineage', 'Trace where the data comes from', true], ['access', 'Request access when you need it', true], ['quality', 'Check freshness and failures', false]],
+    results: ['catalog', 'positions', 'lineage', 'feat', 'access', 'quality', 'events'],
+    paa: [['Who owns a dataset?', 'Every dataset in the Data Catalog lists its data owner. They approve access requests.'], ['How long does data access take?', 'Usually 2 to 3 days. Restricted data also needs a Data Risk review, which takes about 3 weeks.'], ['How do I see what uses a dataset?', 'Open it in Lineage Explorer and switch to downstream. It shows models, dashboards and reports.']],
+    related: ['who approves access to client data?', 'data quality checks', 'lineage client_positions_daily'],
+    chips: [['approval', 'Which of these can I use now?'], ['team', 'What data does my team use?']],
+    ans: { approval: 'You can use Data Catalog, Lineage Explorer and Data Quality now. client_positions_daily and client_churn_features need owner approval, about 2 days each.', team: 'Your team mostly uses client_churn_features and client_positions_daily, both owned by Dana Ruiz.' } },
+  gov: { re: /approv|use case|governance|risk|access|review|register/i, summary: 'Register AI use cases in AI Governance Hub. For datasets, Data Access Requests sends your request to the data owner. Model approvals are tracked in Model Hub › Reviews.', recos: ['govhub', 'access'],
+    start: [['COPY IT', 'Policy Helper\u2019s use case', 'A similar approved use case you can start from.', 'Open now', G, 'AI Governance Hub › Use cases', 'govhub'], ['READ IT', 'Churn modeling playbook', 'How AWM gets models through review.', 'Open to AWM', G, 'Confluence › Churn playbook', 'playbook']],
+    startSum: 'An approved use case to copy, and how your team gets through review', anchor: 'govhub', stack: [['hub', 'Track model approvals', true], ['access', 'Request the data you need', true]],
+    results: ['govhub', 'access', 'hub', 'catalog', 'playbook'],
+    paa: [['How long does a use case take to approve?', 'Tier 3 use cases are usually approved within a week. Tier 1 and 2 need model risk review, about 3 to 6 weeks.'], ['Who approves access to client data?', 'The dataset\u2019s data owner, plus a Data Risk review for client data. Most requests take 2 to 3 days.']],
+    related: ['register an AI use case', 'check a model approval', 'who approves access to client data?'],
+    chips: [['approval', 'What do I need to submit?'], ['team', 'What has my team registered?']],
+    ans: { approval: 'For a use case: a name, the data it uses, who will use it and a risk tier. AI Governance Hub suggests the tier from your answers.', team: 'Your AWM team has 5 registered use cases. 2 are waiting on model risk review.' } }
+};
+const TASKS = [
+  { re: /gpu|capacity|compute/i, id: 'nexa', path: 'Nexa › GPU requests › New request', d: 'This is where GPU capacity is requested. The form opens with your request filled in.', alt: ['sage', 'SageMaker Studio › Instances', 'Only if your team trains in AWS'], takes: [['A use case. You pick it on the request form.', A], ['Quota approval from your manager, usually 2 days', A]] },
+  { re: /register.*use case|use case/i, id: 'govhub', path: 'AI Governance Hub › Use cases › New', d: 'Register your use case. It takes about 5 minutes.', takes: [['A name, the data it uses and who will use it', G]] },
+  { re: /request.*(access|data)|data access/i, id: 'access', path: 'Data Access Requests › New request', d: 'Start a request. It goes to the right owner.', takes: [['Approval from the data owner, about 2 to 3 days', A]] }
+];
+const AMBIG = { lineage: { ask: 'Lineage of what?', hint: 'Most people in your role mean dataset lineage.', options: [['lineage', 'A dataset', 'Lineage Explorer · Data management', 'lineage client_positions_daily'], ['hub', 'A model', 'Model Hub · ML', 'compare models'], ['govhub', 'An AI use case', 'AI Governance Hub · Governance', 'register an AI use case']] }, access: { ask: 'Access to what?', hint: '', options: [['access', 'A dataset', 'Data Access Requests', 'who approves access to client data?'], ['gateway', 'An LLM', 'AI Gateway keys', 'call an approved LLM'], ['policy', 'An agent', 'Agent Directory', 'I want to build an agent']] } };
+const WORK = {
+  nexa: ['Nexa › Experiment 214', 'Training run finished · AUC 0.89', G, 'Open experiment'],
+  studio: ['Agent Studio › Policy Q&A (draft)', 'Draft saved, not published yet', MU, 'Open draft'],
+  sage: ['SageMaker Studio › churn-features.ipynb', 'Notebook idle · kernel stopped', MU, 'Open notebook'],
+  hub: ['Model Hub › Churn model v3', 'Your team published v3.1', G, 'Open model'],
+  lineage: ['Lineage Explorer › client_positions_daily', 'You were viewing upstream sources', MU, 'Open'],
+  catalog: ['Data Catalog › client_churn_features', 'You saved this dataset', MU, 'Open'],
+  access: ['Data Access Requests › client_churn_features', 'Approved yesterday by Dana Ruiz', G, 'View request'],
+  govhub: ['AI Governance Hub › UC-4821', 'Waiting on AI Governance review', A, 'View use case'],
+  kh: ['Knowledge Hub › AWM Policies', 'Source request sent to site owner', A, 'View request'],
+  bench: ['Model Benchmarking › Run 88', 'Benchmark finished · 3 models compared', G, 'See results'],
+  quality: ['Data Quality › My datasets', '2 checks failed this week', A, 'See checks']
+};
+const SEED_HIST = [{ title: 'Fine-tune a model on trade data', when: 'Yesterday', msgs: [{ q: 'Fine-tune a model on trade data', a: 'Start in Nexa with the fine-tuning template, request GPU capacity, and pull your data from the Data Catalog.' }] }];
+
+class Component extends DCLogic {
+  state = { view: 'home', sq: '', tab: 'all', accOnly: false, focus: null, startOpen: false, stackOpen: false, add: {}, paa: -1, areaKey: 'AI', areaTab: 'all', sel: null,
+    searches: [], launched: [], pinned: [], times: {}, navOpen: false,
+    palOpen: false, pq: '', chatOpen: false, chatMin: false, showHist: false, msgs: [], history: SEED_HIST, cDraft: '', ovDraft: '' };
+  componentDidMount() {
+    const d = this.props.startAs;
+    if (d === 'Day 0.5') this.setState({ searches: ['I want to build an agent', 'client churn'] });
+    if (d === 'Day 1') this.setState({ searches: ['I want to build an agent', 'client churn'], launched: ['nexa', 'studio', 'lineage'], pinned: ['studio'], times: { nexa: Date.now() - 864e5, studio: Date.now() - 3 * 864e5, lineage: Date.now() - 4 * 864e5 } });
+    this._key = e => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); this.focusAnchor(); }
+      else if (e.key === 'Escape') this.setState({ palOpen: false, sel: null });
+    };
+    window.addEventListener('keydown', this._key);
+  }
+  focusAnchor() { setTimeout(() => { const el = document.querySelector('[data-pal-anchor="' + (this.state.view === 'home' ? 'home' : 'top') + '"]'); if (el) { el.focus(); if (el.select) el.select(); } }, 0); }
+  componentWillUnmount() { window.removeEventListener('keydown', this._key); }
+  scen(q) { const w = q.trim().split(/\s+/).length; if (w <= 2 && typeOf(q)) return null; return ['agent', 'ml', 'data', 'gov'].find(k => SC[k].re.test(q)) || null; }
+  item(id) {
+    const x = I[id], st = this.state, [tile, ink] = x.type === 'product' ? AREA_T[x.area] : TYPE_T[x.type];
+    const nd = x.needs || [['ready', 'Open to everyone']];
+    const groups = SORD.filter(s => nd.some(n => n[0] === s)).map(s => ({ label: STAT[s][0], dot: STAT[s][1], items: nd.filter(n => n[0] === s).map(n => ({ t: n[1] })) }));
+    const pinned = st.pinned.includes(id), areaName = (AREAS.find(a => a.key === x.area) || {}).name || x.area;
+    const ins = [{ w: 'Your team', t: x.team ? x.team + ' people on your AWM team use ' + x.name : 'Nobody on your team uses this yet' }, { w: 'Similar roles', t: x.area === 'ML' || x.type === 'model' ? 'Popular with data scientists and ML engineers' : x.area === 'Data' ? 'Popular with data engineers and analysts' : x.area === 'Governance' ? 'Used by anyone shipping AI or using client data' : 'Popular with engineers and product teams' }];
+    const stop = e => { if (e && e.stopPropagation) e.stopPropagation(); };
+    return { ...x, id, tile, ink, area: areaName, typeLabel: TYPE_L[x.type], status: ACC[x.acc][0], dot: ACC[x.acc][1], factsL: x.facts.map(f => ({ f })), groups, insights: ins,
+      fit: x.fit || '', usage: x.usage || '',
+      jumpsL: (x.jumps || []).map(([path, d]) => ({ path, d, go: () => this.launch(id, path) })),
+      open: () => this.setState({ sel: id, palOpen: false }),
+      focus: () => { if (this.state.focus !== id) this.setState({ focus: id }); },
+      launch: e => { stop(e); this.launch(id); },
+      pin: e => { stop(e); this.setState(s => ({ pinned: s.pinned.includes(id) ? s.pinned.filter(p => p !== id) : [...s.pinned, id] })); },
+      pinLabel: pinned ? 'Pinned' : 'Pin', pinTitle: pinned ? 'Unpin from side nav' : 'Pin to side nav', pinBg: pinned ? '#ECE9FF' : 'transparent', pinOp: pinned ? 1 : 0.55 };
+  }
+  launch(id, path) {
+    window.open('https://example.com/' + id, '_blank');
+    this.setState(s => ({ launched: [id, ...s.launched.filter(x => x !== id)].slice(0, 6), times: { ...s.times, [id]: Date.now() }, lastPath: { ...(s.lastPath || {}), [id]: path || (I[id].jumps && I[id].jumps[0] ? I[id].jumps[0][0] : I[id].name) }, palOpen: false }));
+  }
+  search(q) {
+    q = (q || '').trim(); if (!q) return;
+    this.setState(s => ({ view: 'results', sq: q, tab: 'all', accOnly: false, focus: null, startOpen: false, stackOpen: false, paa: -1, sel: null, palOpen: false, pq: '',
+      searches: [q, ...s.searches.filter(x => x.toLowerCase() !== q.toLowerCase())].slice(0, 6),
+      history: s.msgs.length ? [{ title: s.msgs[0].q, when: 'Just now', msgs: s.msgs }, ...s.history] : s.history, msgs: [], chatOpen: false, chatMin: false }));
+    window.scrollTo(0, 0);
+  }
+  resolve(q) {
+    const t = q.trim(), lt = t.toLowerCase();
+    if (!t) return { kind: 'empty' };
+    const words = lt.split(/\s+/).length;
+    const prod = Object.keys(I).find(id => I[id].name.toLowerCase() === lt || (words <= 2 && lt.length >= 3 && I[id].name.toLowerCase().startsWith(lt)));
+    if (prod && words <= 3) return { kind: 'launch', read: 'Read as a name', top: prod };
+    if (AMBIG[lt]) return { kind: 'clarify', read: 'Could mean ' + AMBIG[lt].options.length + ' things', ...AMBIG[lt] };
+    if (/^(who|what|how|which|can|does|is|why|where|when)\b|\?$/.test(lt)) {
+      const sk = this.scen(lt) || 'gov', hit = SC[sk].paa.find(p => p[0].toLowerCase().split(/\W+/).filter(w => w.length > 4).some(w => lt.includes(w)));
+      return { kind: 'answer', read: 'Read as a question', answer: hit ? hit[1] : SC[sk].summary, dests: SC[sk].recos.map((id, i) => ({ id, path: I[id].jumps[0][0], d: I[id].jumps[0][1], best: i === 0 })), full: true };
+    }
+    const task = TASKS.find(x => x.re.test(lt) && /request|get|reserve|need|register|new|apply/.test(lt));
+    if (task) return { kind: 'dest', read: 'Read as a task', dests: [{ id: task.id, path: task.path, d: task.d, best: true }, ...(task.alt ? [{ id: task.alt[0], path: task.alt[1], d: task.alt[2] }] : [])], takes: task.takes, full: true };
+    const sk = this.scen(lt), ty = words <= 2 ? typeOf(lt) : null;
+    if (words >= 3 && sk) return { kind: 'goal', read: 'Read as a goal', answer: SC[sk].summary.split('. ')[0] + '.', dests: SC[sk].recos.map((id, i) => ({ id, path: I[id].jumps[0][0], d: I[id].fit || I[id].desc, best: i === 0 })), full: true };
+    const matches = rank(lt, ty).slice(0, 6);
+    if (ty) { const n = Object.keys(I).filter(id => I[id].type === ty).length; return { kind: 'keyword', read: 'Read as a type · ' + TYPEINFO[ty].plural, answer: n + ' ' + TYPEINFO[ty].plural + ' you can see. ' + (TYPEINFO[ty].sent.split('. ')[0] || ''), matches, full: true }; }
+    if (!matches.length) return { kind: 'nomatch', read: 'No match', dym: didYouMean(lt) };
+    return { kind: 'keyword', read: 'Read as a keyword', matches, full: true };
+  }
+  buildPal() {
+    const st = this.state, r = this.resolve(st.pq);
+    const dest = d => { const x = this.item(d.id); return { ...x, path: d.path, d: d.d, cta: d.best ? 'Go there' : 'Open', bg: d.best ? '#FFFFFF' : 'transparent', border: d.best ? '1px solid rgba(22,23,26,0.14)' : '1px solid rgba(22,23,26,0.06)', go: () => this.launch(d.id, d.path) }; };
+    const top = r.kind === 'launch' ? this.item(r.top) : { jumpsL: [] };
+    const pr = st.palRect || { x: 120, y: 120, w: 760 };
+    return {
+      open: st.palOpen, q: st.pq, x: Math.round(pr.x), y: Math.round(pr.y), w: Math.round(pr.w),
+      headerZ: st.palOpen && st.view !== 'home' ? 46 : 30, anchorZ: st.palOpen ? 46 : 1,
+      onFocus: e => { const f = e.target.closest('form'), b = f.getBoundingClientRect(); this.setState({ palOpen: true, pq: e.target.value, palRect: { x: b.left, y: b.bottom + 8, w: Math.min(Math.max(b.width, 560), window.innerWidth - b.left - 16) } }); },
+      onQ: e => this.setState({ pq: e.target.value, palOpen: true }),
+      onKey: e => { if (e.key === 'Escape') { this.setState({ palOpen: false }); e.target.blur(); } },
+      close: () => this.setState({ palOpen: false }),
+      submit: e => { e.preventDefault(); const v = (new FormData(e.target).get('q') || st.pq || '').toString(); const rr = this.resolve(v); if (e.target.q) e.target.q.blur(); if (rr.kind === 'launch') this.launch(rr.top); else if (rr.kind === 'dest') { const d = rr.dests[0]; this.launch(d.id, d.path); } else if (rr.kind === 'clarify') this.search(rr.options[0][3]); else this.search(v); },
+      read: st.palOpen ? (r.read || '') : '', hasRead: st.palOpen && !!r.read,
+      isNoMatch: r.kind === 'nomatch', dym: (r.dym || []).map(q => ({ q, go: () => this.search(q) })), hasDym: !!(r.dym && r.dym.length),
+      isEmpty: r.kind === 'empty', isLaunch: r.kind === 'launch', isClarify: r.kind === 'clarify', hasAnswerLine: !!r.answer,
+      hasDests: !!r.dests, hasTakes: !!r.takes, hasMatches: r.kind === 'keyword' && r.matches.length > 0, hasFull: !!r.full,
+      top, ask: r.ask || '', hint: r.hint || '', answer: r.answer || '',
+      options: (r.options || []).map(([id, t, d, q]) => ({ ...this.item(id), t, d, go: () => this.search(q) })),
+      dests: (r.dests || []).map(dest), takes: (r.takes || []).map(([t, dot]) => ({ t, dot })),
+      matches: (r.matches || []).map(id => this.item(id)), full: () => this.search(st.pq),
+      hasRecent: st.searches.length > 0, recent: st.searches.slice(0, 3).map(q => ({ q, go: () => this.search(q) })),
+      tries: [['Nexa', 'Product name'], ['models', 'Type'], ['lineage', 'Keyword'], ['request gpus for fine-tuning', 'Task'], ['who approves access to client data?', 'Question'], ['I want to build an agent', 'Goal']].map(([q, kind]) => ({ q, kind, go: () => { const rr = this.resolve(q); if (rr.kind === 'launch') this.setState({ pq: q }); else if (rr.kind === 'dest' || rr.kind === 'clarify') this.setState({ pq: q }); else this.search(q); } }))
+    };
+  }
+  buildResults() {
+    const st = this.state, k = this.scen(st.sq), S = k ? SC[k] : null;
+    const ty = !S ? typeOf(st.sq) : null, TI = ty ? TYPEINFO[ty] : null;
+    const allIds = S ? S.results : ty ? [...Object.keys(I).filter(id => I[id].type === ty).sort((a, b) => (I[b].team || 0) - (I[a].team || 0)), ...TI.rel.filter(id => I[id].type !== ty)] : rank(st.sq, null);
+    const types = [...new Set(allIds.map(id => I[id].type))];
+    const tabs = [['all', 'All', allIds.length], ...types.map(t => [t, TYPE_TAB[t], allIds.filter(id => I[id].type === t).length])].map(([key, label, n]) => ({ label, n, pick: () => this.setState({ tab: key, focus: null, chatOpen: false, chatMin: this.state.msgs.length > 0 }), ink: st.tab === key ? '#16171A' : '#5B5D63', weight: st.tab === key ? 600 : 400, border: st.tab === key ? '2px solid #16171A' : '2px solid transparent' }));
+    const isAll = st.tab === 'all';
+    let ids = isAll ? allIds : allIds.filter(id => I[id].type === st.tab);
+    if (st.accOnly) ids = ids.filter(id => ['now', 'view'].includes(I[id].acc));
+    const recos = isAll ? (S ? S.recos : TI && TI.rel.length ? TI.rel.slice(0, 2) : allIds.slice(0, 2)) : ids.slice(0, 1);
+    const typed = ty ? allIds.filter(id => I[id].type === ty) : [];
+    const dym = !allIds.length ? didYouMean(st.sq) : [];
+    const tabName = (TYPE_TAB[st.tab] || '').toLowerCase();
+    const summary = isAll ? (S ? S.summary : TI ? 'You can see ' + typed.length + ' ' + TI.plural + ' on AMDP. The ones used most near you are ' + typed.slice(0, 2).map(id => I[id].name).join(' and ') + '. ' + TI.sent : allIds.length ? 'Here\u2019s what matches "' + st.sq + '" across AMDP. ' + I[allIds[0]].name + ' is the closest match.' : 'Nothing matched "' + st.sq + '". ' + (dym.length ? 'Did you mean "' + dym[0] + '"? ' : '') + 'Try describing what you want to do, or browse an area.') : ids.length ? (I[ids[0]].name + ' is the best ' + TYPE_L[st.tab].toLowerCase() + ' for this search. ' + (ids.length > 1 ? 'The other ' + (ids.length - 1) + ' ' + tabName + ' below can help alongside it.' : '')) : 'No ' + tabName + ' match this directly. Try another tab.';
+    const anchor = S && isAll ? S.anchor : null;
+    let stack = [], onIds = [];
+    if (anchor) { const cur = st.add[anchor] || {}; stack = S.stack.map(([id, note, def]) => { const on = cur[id] ?? def; if (on) onIds.push(id); const x = this.item(id); return { ...x, note, box: on ? '#16171A' : 'transparent', check: on ? '✓' : '', toggle: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState(s => ({ add: { ...s.add, [anchor]: { ...(s.add[anchor] || {}), [id]: !on } } })); } }; }); }
+    const stackIds = anchor ? [anchor, ...onIds] : [];
+    const needReq = stackIds.filter(id => !['now', 'view'].includes(I[id].acc)).length;
+    const fid = st.focus && I[st.focus] ? st.focus : (recos[0] || ids[0] || allIds[0] || 'studio');
+    const linkTabs = !isAll && !ids.length ? types.filter(t => t !== st.tab).slice(0, 2) : [];
+    const goArea = k => () => { this.setState({ view: 'area', areaKey: k, areaTab: 'all' }); window.scrollTo(0, 0); };
+    const extraLinks = !allIds.length ? [...dym.map(q => ({ label: 'Search "' + q + '"', go: () => this.search(q) })), ...AREAS.map(a => ({ label: 'Browse ' + a.name, go: goArea(a.key) }))] : [];
+    const paaSrc = S ? S.paa : TI ? TI.paa : [], relSrc = S ? S.related : TI ? TI.related : [];
+    return {
+      tabs, isAll, summary, sources: (allIds.length + 3) + ' sources',
+      links: [...linkTabs.map(t => ({ label: 'Go to ' + TYPE_TAB[t], go: () => this.setState({ tab: t }) })), ...extraLinks], hasLinks: linkTabs.length + extraLinks.length > 0,
+      hasPaa: isAll && paaSrc.length > 0, hasRelated: isAll && relSrc.length > 0, hasList: allIds.length > 0,
+      recos: recos.map(id => this.item(id)), hasRecos: recos.length > 0,
+      hasFolds: !!(S && isAll), hasStart: !!(S && isAll), hasStack: !!anchor,
+      startSum: S ? S.startSum : '', startOpen: st.startOpen, startLabel: st.startOpen ? 'Hide' : 'Show ' + (S ? S.start.length : 0), toggleStart: () => this.setState(s => ({ startOpen: !s.startOpen })),
+      start: S ? S.start.map(([kk, t, d, meta, dot, path, id]) => ({ k: kk, t, d, meta, dot, path, go: () => this.launch(id, path) })) : [],
+      stackTitle: anchor ? 'Products that work well with ' + I[anchor].name : '', stackSum: anchor ? 'Teams usually add ' + S.stack.filter(x => x[2]).map(x => I[x[0]].name).join(' and ') + ' to complete their product stack' : '',
+      stackOpen: st.stackOpen, stackLabel: st.stackOpen ? 'Hide' : 'Show ' + stack.length, toggleStack: () => this.setState(s => ({ stackOpen: !s.stackOpen })),
+      stack, stackCta: 'Launch product stack (' + stackIds.length + ')', stackNote: needReq ? needReq + ' of ' + stackIds.length + ' need a request. Each product will show you what to do.' : 'You can use all of these now.',
+      launchStack: () => stackIds.forEach(id => this.launch(id)),
+      paa: paaSrc.map(([q, a], i) => ({ q, a, open: st.paa === i, sign: st.paa === i ? '−' : '+', toggle: () => this.setState(s => ({ paa: s.paa === i ? -1 : i })) })),
+      listTitle: isAll ? 'All results' : TYPE_TAB[st.tab],
+      accFilters: [{ label: 'Can use now', on: st.accOnly }].map(f => ({ ...f, bg: f.on ? '#16171A' : 'transparent', ink: f.on ? '#F6F4EF' : '#16171A', toggle: () => this.setState(s => ({ accOnly: !s.accOnly })) })),
+      list: ids.map(id => ({ ...this.item(id), rowBg: id === fid ? '#FFFFFF' : 'transparent' })), empty: ids.length === 0,
+      related: relSrc.map(q => ({ q, go: () => this.search(q) })),
+      railOn: !st.chatOpen && allIds.length > 0, railCol: st.chatOpen || !allIds.length ? '0px' : 'minmax(260px, 340px)',
+      fp: this.item(fid), yourStack: stackIds.map(id => ({ ...this.item(id), bg: id === fid ? '#ECE9FF' : 'transparent' }))
+    };
+  }
+  buildArea() {
+    const st = this.state, a = AREAS.find(x => x.key === st.areaKey) || AREAS[0];
+    const ids = Object.keys(I).filter(id => I[id].area === a.key);
+    const types = [...new Set(ids.map(id => I[id].type))];
+    const list = st.areaTab === 'all' ? ids : ids.filter(id => I[id].type === st.areaTab);
+    return { name: a.name, d: a.d, count: ids.length + ' things',
+      jobs: a.jobs.map(([t, p, q]) => ({ t, p, go: () => this.search(q) })),
+      tabs: [['all', 'All', ids.length], ...types.map(t => [t, TYPE_TAB[t], ids.filter(id => I[id].type === t).length])].map(([k, label, n]) => ({ label, n, pick: () => this.setState({ areaTab: k }), ink: st.areaTab === k ? '#16171A' : '#5B5D63', weight: st.areaTab === k ? 600 : 400, border: st.areaTab === k ? '2px solid #16171A' : '2px solid transparent' })),
+      list: list.map(id => this.item(id)) };
+  }
+  buildChat() {
+    const st = this.state, k = st.view === 'results' ? this.scen(st.sq) : null, S = k ? SC[k] : null;
+    const asked = st.msgs.map(m => m.key);
+    const base = S ? S.chips : [['what', 'What can I do on AMDP?'], ['llm', 'Which LLMs are approved?'], ['data', 'Help me find a dataset']];
+    const answer = key => {
+      if (S && S.ans[key]) { const a = S.ans[key]; if (Array.isArray(a)) return { q: S.chips.find(c => c[0] === key)[1], a: a[0], isCompare: true, colA: a[1], colB: a[2], rows: a[3].map(([l, x, y]) => ({ l, a: x, b: y })) }; return { q: S.chips.find(c => c[0] === key)[1], a }; }
+      const H = { what: 'People here work in four areas: AI (agents, LLMs), ML (training, GPUs), governance (use cases, approvals) and data management (catalog, lineage, quality). Tell me what you\u2019re trying to do.', llm: 'Every model approved in AI Gateway, including the firm-hosted GPT, Claude and Llama families. Model Hub lists them with benchmarks and limits.', data: 'Tell me the topic or a column name and I\u2019ll search the Data Catalog. Datasets show their owner and how long access takes.' };
+      return { q: base.find(c => c[0] === key)[1], a: H[key] || '' };
+    };
+    const ask = m => this.setState(s => ({ chatOpen: true, chatMin: false, showHist: false, msgs: [...s.msgs, m], cDraft: '', ovDraft: '', ...(m.narrow ? { accOnly: true } : {}) }));
+    const free = t => {
+      const narrow = /only|can use|access now|available/i.test(t);
+      return { key: 'f' + Date.now(), q: t, a: S ? (narrow ? 'I\u2019ve filtered the results to things you can use now.' : 'For "' + t + '", ' + I[S.recos[0]].name + ' is still the best place to start. Ask me to compare options, check approvals, or narrow the results.') : 'Search for it to see options, or tell me a little more about what you want to do.', narrow, hasChanged: narrow, changed: narrow ? 'Results updated: Can use now' : '' };
+    };
+    const fid = st.view === 'results' ? (st.focus || (S ? S.recos[0] : null)) : null;
+    return {
+      open: st.chatOpen, pill: !st.chatOpen && st.chatMin && st.msgs.length > 0, count: st.msgs.length,
+      pad: st.chatOpen ? '480px' : '0px', context: st.view === 'results' ? 'About "' + st.sq + '"' : '',
+      topBg: st.chatOpen ? '#EFEBFF' : 'transparent', topInk: st.chatOpen ? '#3A2BD9' : '#5B5D63',
+      toggle: () => this.setState(s => ({ chatOpen: !s.chatOpen, chatMin: !s.chatOpen ? false : s.msgs.length > 0, showHist: false })),
+      openHistory: () => this.setState(s => ({ chatOpen: true, chatMin: false, showHist: s.msgs.length === 0 })),
+      close: () => this.setState(s => ({ chatOpen: false, chatMin: s.msgs.length > 0 })), restore: () => this.setState({ chatOpen: true, chatMin: false }),
+      dismiss: () => this.setState(s => ({ chatMin: false, history: s.msgs.length ? [{ title: s.msgs[0].q, when: 'Just now', msgs: s.msgs }, ...s.history] : s.history, msgs: [] })),
+      toggleHistory: () => this.setState(s => ({ showHist: !s.showHist })), histBg: st.showHist ? 'rgba(22,23,26,0.06)' : 'transparent',
+      newChat: () => this.setState(s => ({ history: s.msgs.length ? [{ title: s.msgs[0].q, when: 'Just now', msgs: s.msgs }, ...s.history] : s.history, msgs: [], showHist: false })),
+      history: st.history.map((h, i) => ({ ...h, open: () => this.setState(s => ({ msgs: h.msgs, showHist: false, history: s.history.filter((_, j) => j !== i) })) })),
+      showHistory: st.showHist, showEmpty: !st.showHist && st.msgs.length === 0, showThread: !st.showHist && st.msgs.length > 0,
+      msgs: st.msgs.map(m => ({ hasCtx: false, ctxName: '', ctxItems: [], isCompare: false, colA: '', colB: '', rows: [], hasChanged: false, changed: '', ...m })),
+      chips: base.filter(c => !asked.includes(c[0])).map(([key, label]) => ({ label, ask: () => ask({ key, ...answer(key) }) })),
+      draft: st.cDraft, onDraft: e => this.setState({ cDraft: e.target.value }),
+      submit: e => { e.preventDefault(); const v = (new FormData(e.target).get('m') || '').toString().trim(); if (v) { ask(free(v)); e.target.reset(); } },
+      ovDraft: st.ovDraft, onOvDraft: e => this.setState({ ovDraft: e.target.value }),
+      submitOverview: e => { e.preventDefault(); const v = (new FormData(e.target).get('m') || '').toString().trim(); if (v) { ask(free(v)); e.target.reset(); } },
+      askNeed: () => { if (!fid) return; const x = this.item(fid); const blockers = (I[fid].needs || []).filter(n => n[0] !== 'ready'); ask({ key: 'need' + Date.now(), q: 'What do I need to use ' + x.name + '?', a: blockers.length ? 'To use ' + x.name + ' you\u2019ll need: ' + blockers.map(n => n[1].charAt(0).toLowerCase() + n[1].slice(1)).join('; ') + '. ' + x.name + ' will walk you through each step when you open it.' : x.name + ' is ready to use now.', hasCtx: true, ctxName: x.name, ctxItems: (I[fid].needs || []).map(n => ({ label: STAT[n[0]][0], t: n[1], dot: STAT[n[0]][1] })) }); },
+      askAbout: id => { const x = this.item(id); ask({ key: 'about' + Date.now(), q: 'Tell me about ' + x.name, a: x.desc + ' ' + (x.groups[0] ? x.groups[0].label + ': ' + x.groups[0].items[0].t + '.' : '') }); }
+    };
+  }
+  renderVals() {
+    const st = this.state;
+    const day = st.launched.length ? 2 : st.searches.length ? 1 : 0;
+    const chat = this.buildChat();
+    const navItem = (id, sub) => { const x = this.item(id); return { mono: x.mono, tile: x.tile, ink: x.ink, tileBorder: '0', name: x.name, sub, tip: x.name, go: () => this.setState({ sel: id }) }; };
+    const anchor = st.pinned[0] || st.launched[0];
+    const have = new Set([...st.pinned, ...st.launched]);
+    const STK = { studio: ['kh', 'skills', 'mcp'], sdk: ['gateway', 'mcp', 'kh'], nexa: ['hub', 'feat', 'catalog'], sage: ['feat', 'hub'], lineage: ['quality', 'catalog', 'access'], catalog: ['lineage', 'access'], govhub: ['hub', 'access'] };
+    const sugg = anchor ? [...(STK[anchor] || []), ...Object.keys(I).filter(id => I[id].area === I[anchor].area)].filter((id, i, a) => a.indexOf(id) === i && !have.has(id)).slice(0, 3) : [];
+    const sections = [];
+    if (st.pinned.length) sections.push({ title: 'PINNED', sub: '', items: st.pinned.map(id => navItem(id, I[id].type === 'product' ? 'Launch' : TYPE_L[I[id].type])) });
+    if (st.launched.length) sections.push({ title: 'RECENTLY OPENED', sub: '', items: st.launched.slice(0, 4).map(id => navItem(id, (st.lastPath || {})[id] || I[id].name)) });
+    if (sugg.length) sections.push({ title: 'PRODUCT STACK', sub: 'Works with ' + I[anchor].name, items: sugg.map(id => ({ ...navItem(id, 'Works with ' + I[anchor].name), tileBorder: '1px dashed ' + this.item(id).ink, tip: I[id].name + ': works with ' + I[anchor].name })) });
+    sections.push({ title: 'EXPLORE BY AREA', sub: '', items: AREAS.map(a => ({ mono: a.key.slice(0, 2).toUpperCase(), tile: AREA_T[a.key][0], ink: AREA_T[a.key][1], tileBorder: '0', name: a.name, sub: a.d, tip: a.name, go: () => { this.setState({ view: 'area', areaKey: a.key, areaTab: 'all' }); window.scrollTo(0, 0); } })) });
+    const isHome = st.view === 'home';
+    const rel0 = t => { if (!t) return 'earlier'; const m = Math.floor((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.floor(m / 60) + 'h ago' : Math.floor(m / 1440) + 'd ago'; };
+    const motion = st.launched.filter(id => WORK[id]).slice(0, 4).map(id => { const x = this.item(id), w = WORK[id]; return { ...x, path: w[0], state: w[1], dot: w[2], cta: w[3], when: rel0(st.times[id]), open: () => this.launch(id, w[0]) }; });
+    const rel = t => { if (!t) return 'Earlier'; const m = Math.floor((Date.now() - t) / 60000); return m < 1 ? 'Just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.floor(m / 60) + 'h ago' : Math.floor(m / 1440) + 'd ago'; };
+    const greetName = 'Natasha';
+    const r = st.view === 'results' ? this.buildResults() : { tabs: [], recos: [], start: [], stack: [], paa: [], list: [], related: [], accFilters: [], links: [], yourStack: [], fp: { groups: [], insights: [] } };
+    const topText = st.view === 'results' ? st.sq : 'Search products, data, models or ask a question';
+    const rk = st.view === 'results' ? this.resolve(st.sq) : {};
+    return {
+      topBorder: isHome ? '1px solid transparent' : '1px solid rgba(22,23,26,0.1)',
+      showTopSearch: !isHome, topKey: st.view + '|' + st.sq, topSearchValue: st.view === 'results' ? st.sq : '',
+      hasTopRead: st.palOpen ? !!this.resolve(st.pq).read : st.view === 'results' && !!rk.read, topRead: (st.palOpen ? (this.resolve(st.pq).read || '') : (rk.read || '')).replace('Read as a ', '').replace('Read as ', ''),
+      goHome: () => { this.setState({ view: 'home', sel: null }); window.scrollTo(0, 0); },
+      openPalette: () => this.focusAnchor(),
+      hasNav: day > 0,
+      nav: { open: st.navOpen, w: st.navOpen ? '248px' : '68px', toggle: () => this.setState(s => ({ navOpen: !s.navOpen })), toggleGlyph: st.navOpen ? '‹ Collapse' : '›', toggleLabel: st.navOpen ? 'Collapse navigation' : 'Expand navigation', toggleAlign: st.navOpen ? 'right' : 'center',
+        main: [{ label: 'Home', glyph: 'H', go: () => this.setState({ view: 'home', sel: null }), bg: isHome ? 'rgba(22,23,26,0.06)' : 'transparent', weight: isHome ? 600 : 400 }, { label: 'Chat', glyph: 'C', go: chat.openHistory, bg: st.chatOpen ? '#EFEBFF' : 'transparent', weight: st.chatOpen ? 600 : 400 }],
+        sections },
+      isHome, isResults: st.view === 'results', isArea: st.view === 'area',
+      areas: AREAS.map(a => ({ name: a.name, d: a.d, n: Object.keys(I).filter(id => I[id].area === a.key).length + ' things', open: () => { this.setState({ view: 'area', areaKey: a.key, areaTab: 'all' }); window.scrollTo(0, 0); }, jobs: a.jobs.map(([t, p, q]) => ({ t, p, go: () => this.search(q) })) })),
+      home: {
+        d0: day === 0, d05: day === 1, d1: day === 2, notD0: day !== 0,
+        greet: day === 0 ? 'Welcome to AMDP, ' + greetName : day === 1 ? 'Welcome back, ' + greetName : 'Good morning, ' + greetName,
+        headline: day === 2 ? 'Pick up where you left off, or start something new.' : 'What do you need today?',
+        searches: st.searches.slice(0, 3).map(q => { const k = this.scen(q); const tops = k ? SC[k].recos : []; return { q, meta: k ? SC[k].results.length + ' results' : '', rerun: () => this.search(q), tops: tops.map(id => this.item(id)) }; }),
+        hasMotion: motion.length > 0, motion,
+        hasJump: st.launched.some(id => !WORK[id]), jump: st.launched.filter(id => !WORK[id]).slice(0, 4).map(id => { const x = this.item(id); return { ...x, path: (st.lastPath || {})[id] || x.name, when: rel(st.times[id]), open: () => this.launch(id, (st.lastPath || {})[id]) }; }),
+        around: [{ i: 'PS', bg: '#ECE9FF', t: 'Priya Shah launched Policy Helper, built in Agent Studio', when: '2h' }, { i: 'JK', bg: '#FBF1DC', t: 'James Kim shared a product stack for churn models', when: 'Mon' }, { i: 'MP', bg: '#DDF2EC', t: '4 people on your team asked about MCP this week', when: 'This week' }],
+        starts: [['Build an agent over your documents', '31 in AWM did this', 'I want to build an agent'], ['Improve a model with fresh data', '12 in AWM', 'improve our client churn model'], ['Find governed client data', '48 in AWM', 'find client data']].map(([t, meta, q]) => ({ t, meta, go: () => this.search(q) })),
+        popular: [['studio', 'Most launched in AWM this month'], ['lineage', 'Up 40% since the data audit'], ['nexa', 'Q4 GPU capacity window is open']].map(([id, why]) => ({ ...this.item(id), why }))
+      },
+      r, ar: st.view === 'area' ? this.buildArea() : { jobs: [], tabs: [], list: [] },
+      chat, pal: this.buildPal(),
+      fly: st.sel && I[st.sel] ? { has: true, it: this.item(st.sel), close: () => this.setState({ sel: null }), ask: () => { this.setState({ sel: null }); chat.askAbout(st.sel); }, related: (STK[st.sel] || Object.keys(I).filter(id => id !== st.sel && I[id].area === I[st.sel].area).slice(0, 3)).map(id => this.item(id)) } : { has: false, it: { factsL: [], jumpsL: [], groups: [] }, related: [], close: () => {} }
+    };
+  }
+}
+
+</script>
+</body>
+</html>
